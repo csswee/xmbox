@@ -23,7 +23,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TVBoxMobile"
+rootProject.name = "XMBOX"
 include ':app'
 include ':player'
 include ':quickjs'
