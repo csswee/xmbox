@@ -26,6 +26,6 @@
         android:backgroundTint="@color/colorPrimary"
         app:borderWidth="0dp"
         android:src="@drawable/ic_filter_list"
-        app:tint="@android:color/white"
+        app:tint="@color/fab_icon_color"
         />
 </RelativeLayout>
