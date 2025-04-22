@@ -517,6 +517,23 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
     }
 
     /**
+     * 检查并恢复音频
+     * 用于解决播放过程中声音突然消失的问题
+     */
+    public void checkAndRecoverAudio() {
+        if (isInPlaybackState() && !isMute() && mMediaPlayer != null) {
+            // 重新设置音量，恢复可能丢失的音频
+            mMediaPlayer.setVolume(1.0f, 1.0f);
+            // 如果启用了音频焦点管理，尝试重新请求音频焦点
+            if (mAudioFocusHelper != null) {
+                mAudioFocusHelper.requestFocus();
+            }
+        }
+    }
+
+
+
+    /**
      * 视频缓冲完毕，准备开始播放时回调
      */
     @Override

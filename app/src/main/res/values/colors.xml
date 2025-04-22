@@ -53,6 +53,7 @@
     <color name="black">#000000</color>
     <color name="text_foreground">@color/md3_on_background</color>
     <color name="text_sub_foreground">@color/md3_on_surface_variant</color>
+    <color name="text_light_foreground">#191C1C</color>
     <color name="light_gray_color">#e6e6e6</color>
     <!--    警示黄色-->
     <color name="warn">@color/md3_tertiary</color>
@@ -110,9 +111,15 @@
     <color name="search_category_bg">#A5C0C0</color>
 
     <!-- 菜单项背景色 - 日间模式使用浅灰色 -->
-    <color name="menu_item_bg">#E8EDED</color>
+    <color name="menu_item_bg">@color/md3_surface_variant</color>
 
     <!-- 深色模式背景色 - 深灰色 -->
     <color name="color_232626">#232626</color>
+
+    <!-- 波纹效果颜色 - 日间模式 -->
+    <color name="ripple_color">#1A006A6A</color>
+
+    <!-- 底部导航栏活动指示器颜色 - 日间模式使用更淡的颜色 -->
+    <color name="bottom_nav_indicator_light">#E5F8F8</color>
 
 </resources>

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         app:title="订阅管理"
         android:background="?attr/colorSurface"
-        app:leftIcon="@drawable/ic_arrow_back_m3"
+        app:leftIcon="@null"
         app:titleColor="?attr/colorOnSurface"
         app:leftTitleColor="?attr/colorOnSurface"
         app:lineVisible="false"
@@ -40,7 +40,7 @@
         android:layout_margin="10dp"
         android:id="@+id/rv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         tools:listitem="@layout/item_subscription"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
     </LinearLayout>
@@ -53,6 +53,6 @@
         android:layout_margin="16dp"
         android:contentDescription="添加订阅"
         app:srcCompat="@drawable/ic_add_m3"
-        app:tint="?attr/colorOnPrimary"
+        app:tint="@color/fab_icon_color"
         app:backgroundTint="?attr/colorPrimary"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

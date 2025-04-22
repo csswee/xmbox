@@ -45,8 +45,10 @@ public class AllVodSeriesBottomDialog extends BottomPopupView {
 
 
 
-        rv.setLayoutManager(new GridLayoutManager(getContext(), Utils.getSeriesSpanCount(mList)));
-        rv.addItemDecoration(new GridSpacingItemDecoration(Utils.getSeriesSpanCount(mList), 20, true));
+        // 固定使用5列，提供更好的视觉体验
+        int spanCount = 5;
+        rv.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
+        rv.addItemDecoration(new GridSpacingItemDecoration(spanCount, 25, true));
 
         SeriesAdapter seriesAdapter = new SeriesAdapter(true);
         seriesAdapter.setNewData(mList);

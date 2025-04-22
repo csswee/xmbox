@@ -218,7 +218,7 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
                 mVodPlayerCfg.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, "硬解码"));
             }
             if (!mVodPlayerCfg.has("sc")) {
-                mVodPlayerCfg.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0));
+                mVodPlayerCfg.put("sc", 0);  // 强制使用默认缩放模式
             }
             if (!mVodPlayerCfg.has("sp")) {
                 mVodPlayerCfg.put("sp", 1.0f);

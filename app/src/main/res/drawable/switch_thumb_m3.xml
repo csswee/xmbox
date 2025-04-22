@@ -3,7 +3,7 @@
     <!-- 禁用状态 -->
     <item android:state_enabled="false">
         <shape android:shape="oval">
-            <solid android:color="#4D4D4D" />
+            <solid android:color="?attr/colorSurfaceVariant" />
             <size android:height="16dp" android:width="16dp" />
         </shape>
     </item>

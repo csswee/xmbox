@@ -15,6 +15,11 @@ android {
         versionCode 31
         versionName '1.1.1'
         multiDexEnabled true
+        // 增加下面的配置以支持 Java 8 特性
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
         //设置room的Schema的位置
         javaCompileOptions {
             annotationProcessorOptions {
@@ -24,7 +29,7 @@ android {
 
         ndk {
             //abiFilters "armeabi-v7a"//, ""
-            abiFilters "arm64-v8a"
+            abiFilters "arm64-v8a", "x86_64"
         }
 
     }
@@ -62,10 +67,7 @@ android {
         }
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+    // compileOptions 已经在 defaultConfig 中定义
 
     kotlinOptions {
         jvmTarget = '1.8'
@@ -82,7 +84,11 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['META-INF/DEPENDENCIES', 'META-INF/beans.xml']
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/beans.xml', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/INDEX.LIST', 'META-INF/versions/9/module-info.class']
+        }
+        jniLibs {
+            useLegacyPackaging = true
+            excludes += ['**/libconceal.so', '**/libp2p.so']
         }
     }
 }
@@ -162,8 +168,11 @@ dependencies {
     implementation 'com.hyman:flowlayout-lib:1.1.2'
     //崩溃
     implementation project(":crash")
-    //dlna投屏
-    implementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
+    //dlna投屏 - 暂时移除以解决兼容性问题
+    // implementation 'com.github.devin1014.DLNA-Cast:dlna-dmc:V1.0.0'
+    // 使用更兼容的 DLNA 库
+    implementation 'org.fourthline.cling:cling-core:2.1.2'
+    implementation 'org.fourthline.cling:cling-support:2.1.2'
     // Lifecycles
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"

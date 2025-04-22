@@ -50,8 +50,10 @@ public class AllLocalSeriesDialog extends DrawerPopupView {
         findViewById(R.id.v_gesture_line).setVisibility(GONE);
         RecyclerView rv = findViewById(R.id.rv);
 
-        rv.setLayoutManager(new GridLayoutManager(getContext(), Utils.getSeriesSpanCount(mList)));
-        rv.addItemDecoration(new GridSpacingItemDecoration(Utils.getSeriesSpanCount(mList), 20, true));
+        // 固定使用8列，确保所有集数都能正确显示
+        int spanCount = 8;
+        rv.setLayoutManager(new GridLayoutManager(getContext(), spanCount));
+        rv.addItemDecoration(new GridSpacingItemDecoration(spanCount, 20, true));
 
 
         SeriesAdapter seriesAdapter = new SeriesAdapter(true);

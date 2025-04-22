@@ -92,7 +92,8 @@
             android:name=".ui.activity.CollectActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
 
-        <service android:name="com.android.cast.dlna.dmc.DLNACastService"/>
+        <service android:name="com.github.tvbox.osc.service.DLNACastService"
+            android:exported="false"/>
 
         <receiver android:name=".receiver.SearchReceiver" android:exported="true">
             <intent-filter>

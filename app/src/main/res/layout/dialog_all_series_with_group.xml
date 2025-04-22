@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/bg"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_gravity="center"
@@ -23,7 +23,7 @@
             android:id="@+id/mGridViewFlag"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="30dp"
+            android:layout_height="50dp"
             android:layout_margin="10dp"
             android:clipChildren="false"
             android:clipToPadding="false"
@@ -35,8 +35,7 @@
             android:id="@+id/tvSort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="倒序"
-            android:drawableRight="@drawable/ic_swap_vert_m3_24_new"
+            android:drawableRight="@drawable/ic_compare_arrows_m3_24"
             style="@style/Widget.App.Button.SortAndAll"
             android:layout_marginRight="20dp"
             />
@@ -44,8 +43,9 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv"
-        android:layout_width="360dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
         tools:listitem="@layout/item_series"
         />
 

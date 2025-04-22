@@ -41,7 +41,7 @@ public class BaseDialog extends Dialog {
         lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.dimAmount = 0.5f;
         getWindow().setAttributes(lp);
-        getWindow().setWindowAnimations(R.style.BottomDialogAnimation); // Set the animation style
+        getWindow().setWindowAnimations(R.style.BottomDialogAnimation); // 设置底部弹窗动画
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
     }
 

@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.XPopupAnimUtil;
 import com.hjq.bar.TitleBar;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BasePopupView;
@@ -69,7 +70,7 @@ public class TipDialog extends BaseDialog {
                     }
                 });
 
-        md3TipDialog = new XPopup.Builder(context)
+        md3TipDialog = XPopupAnimUtil.createMD3Builder(context)
                 .isDarkTheme(true) // 强制使用深色主题
                 .asCustom(md3Dialog);
 

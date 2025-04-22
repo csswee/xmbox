@@ -34,12 +34,24 @@ public class SeriesAdapter extends BaseQuickAdapter<VodInfo.VodSeries, BaseViewH
         ShadowLayout sl = helper.getView(R.id.sl);
         TextView tvSeries = helper.getView(R.id.tvSeries);
         sl.setSelected(item.selected);
-        tvSeries.setText(item.name);
+
+        // 确保所有集数名称都能正确显示
+        String seriesName = item.name;
+        // 如果是纯数字，确保显示出来
+        tvSeries.setText(seriesName);
+        // 设置文本颜色为白色，增强可见度
+        tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(android.R.color.white));
 
         if (!isGird){// 详情页横向展示时固定宽度
             ViewGroup.LayoutParams layoutParams = sl.getLayoutParams();
             layoutParams.width = ConvertUtils.dp2px(120);
             sl.setLayoutParams(layoutParams);
+        } else {
+            // 如果是网格布局，检查是否是横屏模式
+            if (helper.itemView.getContext().getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
+                // 横屏模式下调整文本大小
+                tvSeries.setTextSize(14);
+            }
         }
     }
 

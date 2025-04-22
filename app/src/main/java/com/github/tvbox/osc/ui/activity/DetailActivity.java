@@ -21,7 +21,9 @@ import android.util.Rational;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -157,6 +159,11 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     @Override
+    public void initVb() {
+        super.initVb();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         openBackgroundPlay = false;
@@ -165,9 +172,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void initView() {
+        // 设置返回按钮点击事件
+        mBinding.ivBack.setOnClickListener(v -> finish());
+
         mBinding.ivPrivateBrowsing.setVisibility(Hawk.get(HawkConfig.PRIVATE_BROWSING, false) ? View.VISIBLE : View.GONE);
         mBinding.ivPrivateBrowsing.setOnClickListener(view -> ToastUtils.showShort("当前为无痕浏览"));
-        mBinding.previewPlayerPlace.setVisibility(showPreview ? View.VISIBLE : View.GONE);
+        // 预览播放器控制
+        if (showPreview) {
+            mBinding.previewPlayer.setVisibility(View.VISIBLE);
+        } else {
+            mBinding.previewPlayer.setVisibility(View.GONE);
+        }
 
         mBinding.mGridView.setHasFixedSize(true);
         mBinding.mGridView.setLayoutManager(new V7LinearLayoutManager(this.mContext, 0, false));
@@ -186,19 +201,43 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             getSupportFragmentManager().beginTransaction().show(playFragment).commitAllowingStateLoss();
         }
 
-        findViewById(R.id.ll_title).setOnClickListener(view -> {
+        // 点击标题区域显示详情对话框
+        View.OnClickListener showDetailListener = view -> {
             new XPopup.Builder(this)
                     .isViewMode(true)
                     .hasNavigationBar(false)
                     .asCustom(new VideoDetailDialog(this, vodInfo))
                     .show();
-        });
+        };
+        // 点击标题或整个头部区域都可以显示详情
+        mBinding.tvDetail.setOnClickListener(showDetailListener);
+
+        // 设置详情按钮的父容器点击事件
+        ViewParent detailParent = findViewById(R.id.tvDetail).getParent();
+        if (detailParent instanceof View) {
+            ((View) detailParent).setOnClickListener(showDetailListener);
+        }
+
+        // 设置下载按钮的点击事件
         findViewById(R.id.tvDownload).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 use1DMDownload();
             }
         });
+
+        // 设置下载按钮的父容器点击事件
+        ViewParent downloadParent = findViewById(R.id.tvDownload).getParent();
+        if (downloadParent instanceof View) {
+            ((View) downloadParent).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    use1DMDownload();
+                }
+            });
+        }
+
+        // 排序按钮已在下面处理
         mBinding.tvSort.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("NotifyDataSetChanged")
             @Override
@@ -206,24 +245,38 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 sortSeries();
             }
         });
+
+        // 设置投屏按钮的点击事件
         mBinding.tvCast.setOnClickListener(v -> {
             showCastDialog();
         });
+
+        // 设置投屏按钮的父容器点击事件
+        ViewParent castParent = findViewById(R.id.tvCast).getParent();
+        if (castParent instanceof View) {
+            ((View) castParent).setOnClickListener(v -> {
+                showCastDialog();
+            });
+        }
+
+        // 设置收藏按钮的点击事件
         mBinding.tvCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = mBinding.tvCollect.getText().toString();
-                if ("加入收藏".equals(text)) {
-                    RoomDataManger.insertVodCollect(sourceKey, vodInfo);
-                    Toast.makeText(DetailActivity.this, "已加入收藏夹", Toast.LENGTH_SHORT).show();
-                    mBinding.tvCollect.setText("取消收藏");
-                } else {
-                    RoomDataManger.deleteVodCollect(sourceKey, vodInfo);
-                    Toast.makeText(DetailActivity.this, "已移除收藏夹", Toast.LENGTH_SHORT).show();
-                    mBinding.tvCollect.setText("加入收藏");
-                }
+                toggleCollect();
             }
         });
+
+        // 设置收藏按钮的父容器点击事件
+        ViewParent collectParent = findViewById(R.id.tvCollect).getParent();
+        if (collectParent instanceof View) {
+            ((View) collectParent).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleCollect();
+                }
+            });
+        }
 
         seriesFlagAdapter.setOnItemClickListener((adapter, view, position) -> {
             FastClickCheckUtil.check(view);
@@ -274,7 +327,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             FastClickCheckUtil.check(v);
             quickLineChange();
         });
-        setLoadSir(mBinding.llLayout);
+        // 设置加载状态视图
+        setLoadSir(mBinding.getRoot());
     }
 
     @Override
@@ -332,6 +386,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     .isViewMode(true)//隐藏导航栏(手势条)在dialog模式下会闪一下,改为view模式,但需处理onBackPress的隐藏,下方同理
                     .hasNavigationBar(false)
                     .popupHeight(ScreenUtils.getScreenHeight())
+                    .popupWidth(ScreenUtils.getAppScreenWidth() / 3) // 设置宽度为屏幕的1/3
                     .popupPosition(PopupPosition.Right)
                     .enableDrag(false)//禁用拖拽,内部有横向rv
                     .asCustom(new AllVodSeriesRightDialog(this));
@@ -482,7 +537,9 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     vodInfo.setVideo(mVideo);
                     vodInfo.sourceKey = mVideo.sourceKey;
 
-                    mBinding.tvName.setText(TextUtils.isEmpty(mVideo.name) ? "暂无信息" : mVideo.name);
+                    // 设置标题和来源
+                    mBinding.tvTitle.setText(mVideo.name);
+                    mBinding.tvVideoTitle.setText(mVideo.name);
                     String srcName = ApiConfig.get().getSource(mVideo.sourceKey).getName();
                     mBinding.tvSite.setText("来源：" + (TextUtils.isEmpty(srcName) ? "未知" : srcName));
 
@@ -568,10 +625,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             showLoading();
             sourceViewModel.getDetail(sourceKey, vodId);
             boolean isVodCollect = RoomDataManger.isVodCollect(sourceKey, vodId);
+            // 找到收藏图标
+            TextView favoriteIcon = (TextView) ((ViewGroup) mBinding.tvCollect.getParent()).getChildAt(0);
+
             if (isVodCollect) {
                 mBinding.tvCollect.setText("取消收藏");
+                // 设置为填充图标颜色
+                favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
             } else {
                 mBinding.tvCollect.setText("加入收藏");
+                // 设置为线框图标颜色
+                favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
             }
         }
     }
@@ -590,6 +654,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     seriesAdapter.notifyItemChanged(index);
                     //mBinding.mGridView.setSelection(index);
                     vodInfo.playIndex = index;
+
+                    // 更新当前播放标题
+                    String videoTitle = mVideo.name;
+                    try {
+                        String episodeName = vodInfo.seriesMap.get(vodInfo.playFlag).get(index).name;
+                        videoTitle = mVideo.name + " " + episodeName;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    mBinding.tvVideoTitle.setText(videoTitle);
+
                     //保存历史
                     insertVod(sourceKey, vodInfo);
                 } else if (event.obj instanceof JSONObject) {
@@ -921,12 +996,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private RemoteAction generateRemoteAction(int iconResId, int actionCode, String title, String desc) {
+        int flags = 0;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // 对于Android 12及以上版本，添加FLAG_IMMUTABLE标志
+            flags = PendingIntent.FLAG_IMMUTABLE;
+        }
         final PendingIntent intent =
                 PendingIntent.getBroadcast(
                         DetailActivity.this,
                         actionCode,
                         new Intent(IntentKey.BROADCAST_ACTION).putExtra("action", actionCode),
-                        0);
+                        flags);
         final Icon icon = Icon.createWithResource(DetailActivity.this, iconResId);
         return (new RemoteAction(icon, title, desc, intent));
     }
@@ -1029,6 +1109,32 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
             mBinding.rvParse.scrollToPosition(defaultIndex);
         }
         mBinding.parseRoot.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+
+    /**
+     * 切换收藏状态
+     */
+    public void toggleCollect() {
+        if (vodInfo != null) {
+            boolean isVodCollect = RoomDataManger.isVodCollect(sourceKey, vodId);
+            // 找到收藏图标
+            TextView favoriteIcon = (TextView) ((ViewGroup) mBinding.tvCollect.getParent()).getChildAt(0);
+
+            if (isVodCollect) {
+                // 使用vodInfo对象而不是vodId
+                RoomDataManger.deleteVodCollect(sourceKey, vodInfo);
+                mBinding.tvCollect.setText("加入收藏");
+                // 设置为线框图标
+                favoriteIcon.setTextColor(getResources().getColor(R.color.text_foreground));
+                ToastUtils.showShort("已取消收藏");
+            } else {
+                RoomDataManger.insertVodCollect(sourceKey, vodInfo);
+                mBinding.tvCollect.setText("取消收藏");
+                // 设置为填充图标
+                favoriteIcon.setTextColor(getResources().getColor(R.color.md3_primary));
+                ToastUtils.showShort("已加入收藏");
+            }
+        }
     }
 
     private void toggleScreenShotListen(boolean open) {

@@ -4,6 +4,8 @@ import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.R
@@ -16,6 +18,8 @@ import com.github.tvbox.osc.databinding.ActivitySettingBinding
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter.SelectDialogInterface
 import com.github.tvbox.osc.ui.dialog.BackupDialog
+import com.hjq.bar.OnTitleBarListener
+import com.hjq.bar.TitleBar
 
 import com.github.tvbox.osc.ui.dialog.SelectDialog
 import com.github.tvbox.osc.util.FastClickCheckUtil
@@ -47,12 +51,34 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
     private var dnsOpt = Hawk.get(HawkConfig.DOH_URL, 0)
 
     override fun init() {
-        // 设置返回图标
-        val backIcon = android.widget.TextView(this)
-        backIcon.text = MaterialSymbols.ARROW_BACK
-        backIcon.setTextAppearance(R.style.Widget_App_MaterialSymbols_Setting_Back)
-        mBinding.titleBar.leftView = backIcon
-        mBinding.titleBar.leftView.setOnClickListener { onBackPressed() }
+        // 自定义返回图标，使用Material Symbols字体
+        val leftView = mBinding.titleBar.getLeftView()
+        if (leftView is TextView) {
+            leftView.text = getString(R.string.ms_arrow_back)
+            // 应用Material Symbols字体
+            MaterialSymbolsLoader.apply(leftView)
+            // 设置正确的大小和样式
+            leftView.textSize = 24f  // 24sp是M3规范的标准图标大小
+            leftView.setTextColor(getColor(R.color.md3_on_surface))
+            android.util.Log.d("SettingActivity", "Applied Material Symbols to back button")
+        }
+
+        mBinding.titleBar.setOnTitleBarListener(object : OnTitleBarListener {
+            override fun onLeftClick(titleBar: TitleBar) {
+                onBackPressed()
+            }
+
+            override fun onTitleClick(titleBar: TitleBar) {
+                // 标题点击
+            }
+
+            override fun onRightClick(titleBar: TitleBar) {
+                // 右侧点击
+            }
+        })
+
+        // 应用Material Symbols字体到所有箭头图标
+        applyMaterialSymbolsToArrows()
         mBinding.tvMediaCodec.text = Hawk.get(HawkConfig.IJK_CODEC, "")
 
         // 确保使用有效的索引访问 dnsHttpsList
@@ -73,10 +99,11 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
         mBinding.tvRenderType.text =
             PlayerHelper.getRenderName(Hawk.get(HawkConfig.PLAY_RENDER, 0))
 
-        mBinding.switchPrivateBrowsing.setChecked(Hawk.get(HawkConfig.PRIVATE_BROWSING, false))
+        // 无痕浏览开关文字形式
+        updatePrivateBrowsingText(Hawk.get(HawkConfig.PRIVATE_BROWSING, false))
         mBinding.llPrivateBrowsing.setOnClickListener { view: View? ->
             val newConfig = !Hawk.get(HawkConfig.PRIVATE_BROWSING, false)
-            mBinding.switchPrivateBrowsing.setChecked(newConfig)
+            updatePrivateBrowsingText(newConfig)
             Hawk.put(HawkConfig.PRIVATE_BROWSING, newConfig)
         }
 
@@ -436,19 +463,21 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
             dialog.show()
         })
 
-        mBinding.switchVideoPurify.setChecked(Hawk.get(HawkConfig.VIDEO_PURIFY, true))
+        // 广告过滤开关
+        updateVideoPurifyText(Hawk.get(HawkConfig.VIDEO_PURIFY, true))
         // toggle purify video -------------------------------------
         mBinding.llVideoPurify.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
             val newConfig = !Hawk.get(HawkConfig.VIDEO_PURIFY, true)
-            mBinding.switchVideoPurify.setChecked(newConfig)
+            updateVideoPurifyText(newConfig)
             Hawk.put(HawkConfig.VIDEO_PURIFY, newConfig)
         }
-        mBinding.switchIjkCachePlay.setChecked(Hawk.get(HawkConfig.IJK_CACHE_PLAY, false))
+        // IJK缓存开关
+        updateIjkCachePlayText(Hawk.get(HawkConfig.IJK_CACHE_PLAY, false))
         mBinding.llIjkCachePlay.setOnClickListener { v: View? ->
             FastClickCheckUtil.check(v)
             val newConfig = !Hawk.get(HawkConfig.IJK_CACHE_PLAY, false)
-            mBinding.switchIjkCachePlay.setChecked(newConfig)
+            updateIjkCachePlayText(newConfig)
             Hawk.put(HawkConfig.IJK_CACHE_PLAY, newConfig)
         }
     }
@@ -475,50 +504,60 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
                 val cacheDir = File(cachePath)
                 if (!cacheDir.exists()) {
                     runOnUiThread {
-                        mBinding.tvCacheSizeLabel.text = "缓存大小（0 MB）"
+                        mBinding.tvCacheSize.text = "0 MB"
                     }
                     return@Thread
                 }
                 val size = FileUtils.getFileSize(cacheDir)
                 val readableSize = FileUtils.formatFileSize(size)
                 runOnUiThread {
-                    mBinding.tvCacheSizeLabel.text = "缓存大小（${readableSize}）"
+                    mBinding.tvCacheSize.text = readableSize
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 runOnUiThread {
-                    mBinding.tvCacheSizeLabel.text = "缓存大小（计算失败）"
+                    mBinding.tvCacheSize.text = "计算失败"
                 }
             }
         }.start()
     }
 
     private fun clearCache() {
-        val cachePath = FileUtils.getCachePath()
-        val cacheDir = File(cachePath)
-        if (!cacheDir.exists()) return
+        try {
+            // 清除缓存
+            val cachePath = FileUtils.getCachePath()
+            val cacheDir = File(cachePath)
+            if (cacheDir.exists()) {
+                // 显示清理中的提示
+                mBinding.tvCacheSize.text = "清理中..."
+                mBinding.btnClearCache.isEnabled = false
 
-        // 显示清理中的提示
-        mBinding.tvCacheSizeLabel.text = "缓存大小（清理中...）"
-        mBinding.btnClearCache.isEnabled = false
-
-        Thread {
-            try {
-                FileUtils.cleanDirectory(cacheDir)
-                runOnUiThread {
-                    MD3ToastUtils.showToast("缓存已清空")
-                    mBinding.tvCacheSizeLabel.text = "缓存大小（0 MB）"
-                    mBinding.btnClearCache.isEnabled = true
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                runOnUiThread {
-                    MD3ToastUtils.showToast("清空缓存失败")
-                    calculateCacheSize() // 重新计算缓存大小
-                    mBinding.btnClearCache.isEnabled = true
-                }
+                Thread {
+                    try {
+                        FileUtils.deleteFile(cacheDir)
+                        runOnUiThread {
+                            MD3ToastUtils.showToast("缓存已清除")
+                            // 重新计算缓存大小
+                            calculateCacheSize()
+                            mBinding.btnClearCache.isEnabled = true
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        runOnUiThread {
+                            MD3ToastUtils.showToast("清除缓存失败: ${e.message}")
+                            // 重新计算缓存大小
+                            calculateCacheSize()
+                            mBinding.btnClearCache.isEnabled = true
+                        }
+                    }
+                }.start()
+            } else {
+                MD3ToastUtils.showToast("没有可清除的缓存")
             }
-        }.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            MD3ToastUtils.showToast("清除缓存失败: ${e.message}")
+        }
     }
 
     private fun getHomeRecName(type: Int): String {
@@ -526,6 +565,90 @@ class SettingActivity : BaseVbActivity<ActivitySettingBinding>() {
             0 -> "豆瓣热播"
             1 -> "站点推荐"
             else -> "关闭"
+        }
+    }
+
+    /**
+     * 应用Material Symbols字体到所有箭头图标并隐藏它们
+     */
+    private fun applyMaterialSymbolsToArrows() {
+        try {
+            // 查找所有带有箭头图标的TextView
+            val arrowViews = ArrayList<TextView>()
+
+            // 递归查找所有带有箭头图标的TextView
+            findArrowTextViews(mBinding.root, arrowViews)
+
+            // 隐藏所有箭头图标
+            for (arrowView in arrowViews) {
+                arrowView.visibility = View.GONE
+                android.util.Log.d("SettingActivity", "Hidden arrow icon: ${arrowView.id}")
+            }
+
+            android.util.Log.d("SettingActivity", "Hidden ${arrowViews.size} arrow icons")
+        } catch (e: Exception) {
+            android.util.Log.e("SettingActivity", "Error hiding arrow icons", e)
+        }
+    }
+
+    /**
+     * 递归查找所有带有箭头图标的TextView
+     */
+    private fun findArrowTextViews(view: View, arrowViews: ArrayList<TextView>) {
+        if (view is TextView && view.text == getString(R.string.ms_arrow_forward)) {
+            arrowViews.add(view)
+        } else if (view is ViewGroup) {
+            for (i in 0 until view.childCount) {
+                findArrowTextViews(view.getChildAt(i), arrowViews)
+            }
+        }
+    }
+
+    /**
+     * 更新无痕浏览文字开关状态
+     */
+    private fun updatePrivateBrowsingText(isEnabled: Boolean) {
+        val textView = mBinding.switchPrivateBrowsing
+        if (isEnabled) {
+            textView.text = "开"
+            // 使用主题色
+            textView.setTextColor(getColor(R.color.md3_primary))
+        } else {
+            textView.text = "关"
+            // 使用普通文本颜色
+            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
+        }
+    }
+
+    /**
+     * 更新广告过滤文字开关状态
+     */
+    private fun updateVideoPurifyText(isEnabled: Boolean) {
+        val textView = mBinding.switchVideoPurify
+        if (isEnabled) {
+            textView.text = "开"
+            // 使用主题色
+            textView.setTextColor(getColor(R.color.md3_primary))
+        } else {
+            textView.text = "关"
+            // 使用普通文本颜色
+            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
+        }
+    }
+
+    /**
+     * 更新IJK缓存文字开关状态
+     */
+    private fun updateIjkCachePlayText(isEnabled: Boolean) {
+        val textView = mBinding.switchIjkCachePlay
+        if (isEnabled) {
+            textView.text = "开"
+            // 使用主题色
+            textView.setTextColor(getColor(R.color.md3_primary))
+        } else {
+            textView.text = "关"
+            // 使用普通文本颜色
+            textView.setTextColor(getColor(R.color.md3_on_surface_variant))
         }
     }
 }

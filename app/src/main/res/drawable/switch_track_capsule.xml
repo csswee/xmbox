@@ -3,7 +3,7 @@
     <!-- 禁用状态 -->
     <item android:state_enabled="false">
         <shape android:shape="rectangle">
-            <solid android:color="#424242" />
+            <solid android:color="?attr/colorSurfaceVariant" />
             <corners android:radius="10dp" />
             <size android:height="20dp" android:width="40dp" />
         </shape>
@@ -11,7 +11,7 @@
     <!-- 选中状态 -->
     <item android:state_checked="true">
         <shape android:shape="rectangle">
-            <solid android:color="#64D8D8" />
+            <solid android:color="?attr/colorPrimary" />
             <corners android:radius="10dp" />
             <size android:height="20dp" android:width="40dp" />
         </shape>
@@ -19,7 +19,7 @@
     <!-- 未选中状态 -->
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="#424242" />
+            <solid android:color="?attr/colorSurfaceVariant" />
             <corners android:radius="10dp" />
             <size android:height="20dp" android:width="40dp" />
         </shape>

@@ -41,7 +41,7 @@ public class SelectDialog<T> extends BaseDialog {
         lp.gravity = Gravity.CENTER;
         lp.width = ConvertUtils.dp2px(330);
         getWindow().setAttributes(lp);
-        getWindow().setWindowAnimations(R.style.DialogFadeAnimation); // Set the animation style
+        getWindow().setWindowAnimations(R.style.MD3DialogAnimation); // 使用Material Design 3风格的动画
 
         // 设置深色主题
         getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);

@@ -114,6 +114,11 @@
         <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 
+    <style name="MD3DialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/md3_fade_in</item>
+        <item name="android:windowExitAnimation">@anim/md3_fade_out</item>
+    </style>
+
     <style name="TabVerticalItemStyle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -219,7 +224,7 @@
         <item name="itemPaddingBottom">16dp</item>
         <item name="android:background">?attr/colorSurface</item>
         <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
-        <item name="itemRippleColor">#33006A6A</item>
+        <item name="itemRippleColor">@android:color/transparent</item>
     </style>
 
     <!-- Material Design 3 标签栏样式 -->
@@ -298,12 +303,12 @@
     <style name="Widget.App.Button.SortAndAll" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:background">@drawable/bg_button_sort_all_m3</item>
         <item name="android:textColor">#D2D4D4</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center</item>
         <item name="android:minHeight">48dp</item>
-        <item name="android:minWidth">100dp</item>
-        <item name="android:drawablePadding">12dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:padding">12dp</item>
     </style>
     <!-- Material Symbols 图标字体样式 -->
     <style name="Widget.App.MaterialSymbols" parent="">
@@ -330,9 +335,9 @@
 
     <!-- Material Symbols 图标字体样式 - 设置页面箭头 -->
     <style name="Widget.App.MaterialSymbols.Setting.Arrow" parent="Widget.App.MaterialSymbols">
-        <item name="android:textSize">26sp</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
-        <item name="android:alpha">0.75</item>
+        <item name="android:alpha">0.8</item>
     </style>
 
     <!-- Material Symbols 图标字体样式 - 设置页面返回按钮 -->

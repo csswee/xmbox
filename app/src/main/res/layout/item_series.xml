@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:hl_cornerRadius="8dp"
-    app:hl_layoutBackground="#232626"
+    app:hl_layoutBackground="#333333"
     app:hl_strokeWith="0.5dp"
     app:hl_strokeColor="#33FFFFFF"
     app:hl_layoutBackground_true="?attr/colorPrimary"
@@ -24,5 +24,6 @@
         android:singleLine="true"
         android:paddingHorizontal="12dp"
         android:paddingVertical="12dp"
-        android:textSize="16sp"/>
+        android:textSize="18sp"
+        android:textColor="@android:color/white"/>
 </com.lihang.ShadowLayout>

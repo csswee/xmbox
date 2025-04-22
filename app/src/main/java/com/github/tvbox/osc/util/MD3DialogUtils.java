@@ -67,8 +67,7 @@ public class MD3DialogUtils {
             String confirmText,
             ConfirmDialog.OnDialogActionListener listener) {
 
-        XPopup.Builder builder = new XPopup.Builder(context)
-                .isDarkTheme(Utils.isDarkTheme());
+        XPopup.Builder builder = XPopupAnimUtil.createMD3Builder(context);
 
         builder.asCustom(createConfirmDialog(context, title, content, cancelText, confirmText, listener))
                 .show();

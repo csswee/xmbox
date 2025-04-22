@@ -33,6 +33,7 @@ public class Utils {
         else if (offset >= 8) spanCount = 2;
         else if (offset >= 4) spanCount = 3;
         else if (offset >= 2) spanCount = 4;
+        else spanCount = 5; // 当名称非常短时使用更多列
         return spanCount;
     }
 

@@ -3,6 +3,7 @@ package com.github.tvbox.osc.ui.activity
 import android.content.Intent
 import android.text.TextUtils
 import android.view.View
+import android.widget.TextView
 import com.blankj.utilcode.util.ClipboardUtils
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ToastUtils
@@ -47,6 +48,17 @@ class SubscriptionActivity : BaseVbActivity<ActivitySubscriptionBinding>() {
     private val mSources: MutableList<Source> = ArrayList()
 
     override fun init() {
+        // 自定义返回图标，使用Material Symbols字体
+        val leftView = mBinding.titleBar.getLeftView()
+        if (leftView is TextView) {
+            leftView.text = getString(R.string.ms_arrow_back)
+            // 应用Material Symbols字体
+            com.github.tvbox.osc.util.MaterialSymbolsLoader.apply(leftView)
+            // 设置正确的大小和样式
+            leftView.textSize = 24f  // 24sp是M3规范的标准图标大小
+            leftView.setTextColor(getColor(R.color.md3_on_surface))
+        }
+
         setLoadSir(mBinding.rv, EmptySubscriptionCallback::class.java)
 
         mBinding.rv.setAdapter(mSubscriptionAdapter)

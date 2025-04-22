@@ -54,7 +54,7 @@
             android:id="@+id/rv_category"
             android:layout_width="120dp"
             android:layout_height="match_parent"
-            android:background="#33FFFFFF"
+            android:background="?attr/colorSurfaceVariant"
             android:paddingVertical="2dp"
             android:clipToPadding="false"
             tools:listitem="@layout/item_search_category"/>

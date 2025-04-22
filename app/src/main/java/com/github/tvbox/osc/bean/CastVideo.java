@@ -2,11 +2,12 @@ package com.github.tvbox.osc.bean;
 
 import androidx.annotation.NonNull;
 
-import com.android.cast.dlna.core.ICast;
-
 import java.util.UUID;
 
-public class CastVideo implements ICast {
+/**
+ * 投屏视频信息
+ */
+public class CastVideo {
 
     private final String name;
     private final String url;
@@ -17,20 +18,24 @@ public class CastVideo implements ICast {
     }
 
     @NonNull
-    @Override
     public String getId() {
         return UUID.randomUUID().toString();
     }
 
     @NonNull
-    @Override
-    public String getUri() {
+    public String getUrl() {
         return url;
     }
 
     @NonNull
-    @Override
     public String getName() {
+        return name;
+    }
+
+    /**
+     * 获取标题
+     */
+    public String getTitle() {
         return name;
     }
 }

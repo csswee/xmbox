@@ -40,42 +40,91 @@
 
                     <TextView
                         android:id="@+id/speed0"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x0.5" />
 
                     <TextView
                         android:id="@+id/speed1"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x1.0" />
 
                     <TextView
                         android:id="@+id/speed1a"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x1.25" />
 
                     <TextView
                         android:id="@+id/speed2"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x1.5" />
 
                     <TextView
                         android:id="@+id/speed3"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x2.0" />
                     <TextView
                         android:id="@+id/speed4"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x2.5" />
                     <TextView
                         android:id="@+id/speed5"
-                        style="@style/Widget.App.Button.PlayControl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_speed_button_selector"
+                        android:paddingVertical="8dp"
+                        android:paddingHorizontal="12dp"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:gravity="center"
                         android:text="x3.0" />
                 </LinearLayout>
             </HorizontalScrollView>
@@ -93,6 +142,8 @@
 
             <TextView
                 android:id="@+id/scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 style="@style/Widget.App.Button.PlayControl"
                 android:drawableEnd="@drawable/ic_change_20"
                 android:drawablePadding="8dp"
@@ -125,6 +176,8 @@
                     />
                 <TextView
                     android:id="@+id/play_time_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginHorizontal="8dp"
                     tools:text="片头" />
@@ -146,6 +199,8 @@
                     />
                 <TextView
                     android:id="@+id/play_time_end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginHorizontal="8dp"
                     tools:text="片尾" />
@@ -159,6 +214,8 @@
 
                 <TextView
                     android:id="@+id/start_end_reset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginStart="10dp"
                     android:text="重置" />
@@ -182,6 +239,8 @@
 
                 <TextView
                     android:id="@+id/player"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:drawableEnd="@drawable/ic_change_20"
@@ -190,6 +249,8 @@
 
                 <TextView
                     android:id="@+id/decode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:drawableEnd="@drawable/ic_change_20"
@@ -216,6 +277,8 @@
                 android:layout_marginBottom="20dp">
                 <TextView
                     android:id="@+id/landscape_portrait"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="横竖屏"
@@ -225,12 +288,16 @@
 
                 <TextView
                     android:id="@+id/subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="字幕" />
 
                 <TextView
                     android:id="@+id/voice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="音轨" />
@@ -238,18 +305,24 @@
 
                 <TextView
                     android:id="@+id/replay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="重播" />
 
                 <TextView
                     android:id="@+id/refresh"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="刷新" />
 
                 <TextView
                     android:id="@+id/download"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
                     android:text="下载"

@@ -37,6 +37,10 @@ class CollectActivity : BaseVbActivity<ActivityCollectBinding>() {
         mBinding.mGridView.setHasFixedSize(true)
         mBinding.mGridView.setLayoutManager(GridLayoutManager(this, 3))
         mBinding.mGridView.setAdapter(collectAdapter)
+
+        // 初始化时隐藏删除按钮，等待数据加载后再决定是否显示
+        mBinding.titleBar.rightView.visibility = View.GONE
+
         mBinding.titleBar.rightView.setOnClickListener {
             MD3DialogUtils.showConfirmDialog(
                 this,
@@ -69,6 +73,9 @@ class CollectActivity : BaseVbActivity<ActivityCollectBinding>() {
                 }
                 if (collectAdapter.data.isEmpty()) {
                     mBinding.topTip.visibility = View.GONE
+                    // 当删除最后一项时隐藏删除按钮
+                    mBinding.titleBar.rightView.visibility = View.GONE
+                    showEmpty(EmptyCollectCallback::class.java)
                 }
                 true
             }
@@ -105,8 +112,12 @@ class CollectActivity : BaseVbActivity<ActivityCollectBinding>() {
                 if (vodInfoList.isNotEmpty()) {
                     showSuccess()
                     mBinding.topTip.visibility = View.VISIBLE
+                    // 有内容时显示删除按钮
+                    mBinding.titleBar.rightView.visibility = View.VISIBLE
                 }else{
                     showEmpty(EmptyCollectCallback::class.java)
+                    // 空状态时隐藏删除按钮
+                    mBinding.titleBar.rightView.visibility = View.GONE
                 }
             }
         }

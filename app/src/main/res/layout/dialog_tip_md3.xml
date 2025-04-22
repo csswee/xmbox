@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_dialog_m3"
+    android:background="@drawable/bg_dialog_md3_light"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -26,9 +27,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="提示"
-            android:textColor="?attr/colorOnSurface"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            style="@style/Widget.App.Dialog.Title" />
     </LinearLayout>
 
     <TextView
@@ -37,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="内容"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        style="@style/Widget.App.Dialog.TextView"
         android:textSize="16sp" />
 
     <LinearLayout

@@ -36,7 +36,8 @@ public class SeriesFlagAdapter extends BaseQuickAdapter<VodInfo.VodSeriesFlag, B
             shadowLayout.setSelected(true);
         } else {
             select.setVisibility(View.GONE);
-            tvFlag.setTextColor(helper.itemView.getContext().getResources().getColor(com.google.android.material.R.color.material_dynamic_secondary60));
+            // 使用更明显的颜色显示文本
+            tvFlag.setTextColor(helper.itemView.getContext().getResources().getColor(android.R.color.white));
             shadowLayout.setSelected(false);
         }
 

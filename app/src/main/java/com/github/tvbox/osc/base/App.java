@@ -76,7 +76,9 @@ public class App extends MultiDexApplication {
                 .setSupportSP(false)
                 .setSupportSubunits(Subunits.MM);
         PlayerHelper.init();
-        QuickJSLoader.init();
+        // 暂时禁用QuickJS的加载，以避免在模拟器上崩溃
+        LOG.e("QuickJS已暂时禁用");
+        // QuickJSLoader.init();
         FileUtils.cleanPlayerCache();
         initCrashConfig();
         Utils.initTheme();
@@ -141,6 +143,10 @@ public class App extends MultiDexApplication {
     }
 
     public static P2PClass getp2p() {
+        // 暂时禁用P2P功能以避免原生库崩溃
+        LOG.e("P2P功能已暂时禁用");
+        return null;
+        /* 原始代码
         try {
             if (p == null) {
                 p = new P2PClass(instance.getExternalCacheDir().getAbsolutePath());
@@ -150,6 +156,7 @@ public class App extends MultiDexApplication {
             LOG.e(e.toString());
             return null;
         }
+        */
     }
 
     private void initCrashConfig(){

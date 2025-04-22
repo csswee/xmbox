@@ -50,4 +50,7 @@
 
     <!-- 波纹效果颜色 - 更暗更柔和的波纹颜色 -->
     <color name="ripple_color_dark">#33006A6A</color>
+
+    <!-- 波纹效果颜色 - 夜间模式 -->
+    <color name="ripple_color">#3364D8D8</color>
 </resources>

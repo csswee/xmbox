@@ -204,6 +204,11 @@ public class PlayFragment extends BaseLazyFragment {
                         stopParse();
                         errorWithRetry("嗅探错误", false);
                         break;
+                    case 200:
+                        // 定期检查和恢复音频
+                        checkAndRecoverAudio();
+                        mHandler.sendEmptyMessageDelayed(200, 30000); // 每30秒检查一次
+                        break;
                 }
                 return false;
             }
@@ -229,123 +234,131 @@ public class PlayFragment extends BaseLazyFragment {
             }
         };
         mVideoView.setProgressManager(progressManager);
-        mController.setListener(new VodController.VodControlListener() {
-            final DetailActivity activity = (DetailActivity) mActivity;
-            @Override
-            public void chooseSeries() {
-                //activity中已处理
-                activity.showAllSeriesDialog();
-            }
-
-            @Override
-            public void playNext(boolean rmProgress) {
-                String preProgressKey = progressKey;
-                PlayFragment.this.playNext(rmProgress);
-                if (rmProgress && preProgressKey != null)
-                    CacheManager.delete(MD5.string2MD5(preProgressKey), 0);
-            }
-
-            @Override
-            public void playPre() {
-                PlayFragment.this.playPrevious();
-            }
-
-            @Override
-            public void changeParse(ParseBean pb) {
-                autoRetryCount = 0;
-                doParse(pb);
-            }
-
-            @Override
-            public void updatePlayerCfg() {
-                mVodInfo.playerCfg = mVodPlayerCfg.toString();
-                EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodPlayerCfg));
-            }
-
-            @Override
-            public void replay(boolean replay) {
-                autoRetryCount = 0;
-                play(replay);
-            }
-
-            @Override
-            public void errReplay() {
-                errorWithRetry("视频播放出错", false);
-            }
-
-            @Override
-            public void selectSubtitle() {
-                try {
-                    selectMySubtitle();
-                } catch (Exception e) {
-                    e.printStackTrace();
+            mController.setListener(new VodController.VodControlListener() {
+                final DetailActivity activity = (DetailActivity) mActivity;
+                @Override
+                public void chooseSeries() {
+                    //activity中已处理
+                    activity.showAllSeriesDialog();
                 }
-            }
 
-            @Override
-            public void selectAudioTrack() {
-                selectMyAudioTrack();
-            }
-
-            @Override
-            public void prepared() {
-                initSubtitleView();
-            }
-
-            @Override
-            public void toggleFullScreen() {
-                activity.toggleFullPreview();
-            }
-
-            @Override
-            public void exit() {
-                activity.onBackPressed();
-            }
-
-            @Override
-            public void cast() {
-                activity.showCastDialog();
-            }
-
-            @Override
-            public void onHideBottom() {
-                if (mFullWindows){
-                    ImmersionBar.with(activity)
-                            .hideBar(BarHide.FLAG_HIDE_BAR)
-                            .init();
+                @Override
+                public void playNext(boolean rmProgress) {
+                    String preProgressKey = progressKey;
+                    PlayFragment.this.playNext(rmProgress);
+                    if (rmProgress && preProgressKey != null)
+                        CacheManager.delete(MD5.string2MD5(preProgressKey), 0);
                 }
-            }
 
-            @Override
-            public void showSetting() {
-                if (mFullWindows){
-                    mPlayingControlRightDialog = new XPopup.Builder(activity)
-                            .isViewMode(true)//改为view模式无法自动响应返回键操作,onBackPress时手动dismiss
-                            .hasNavigationBar(false)
-                            .popupHeight(ScreenUtils.getScreenHeight())
-                            .popupPosition(PopupPosition.Right)
-                            .asCustom(new PlayingControlRightDialog(activity,mController,mVideoView));
-                    mPlayingControlRightDialog.show();
-                }else {
-                    mPlayingControlDialog = new XPopup.Builder(activity)
-                            .isViewMode(true)
-                            .hasNavigationBar(false)
-                            .asCustom(new PlayingControlDialog(activity,mController,mVideoView));
-                    mPlayingControlDialog.show();
+                @Override
+                public void playPre() {
+                    PlayFragment.this.playPrevious();
                 }
-            }
 
-            @Override
-            public void pip() {
-                activity.enterPip();
-            }
+                @Override
+                public void changeParse(ParseBean pb) {
+                    autoRetryCount = 0;
+                    doParse(pb);
+                }
 
-            @Override
-            public void showParseRoot(boolean show, ParseAdapter adapter) {
-                DetailActivity activity = (DetailActivity)mActivity;
-                activity.showParseRoot(show,adapter);
-            }
-        });
+                @Override
+                public void updatePlayerCfg() {
+                    mVodInfo.playerCfg = mVodPlayerCfg.toString();
+                    EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH, mVodPlayerCfg));
+                }
+
+                @Override
+                public void replay(boolean replay) {
+                    autoRetryCount = 0;
+                    play(replay);
+                }
+
+                @Override
+                public void errReplay() {
+                    errorWithRetry("视频播放出错", false);
+                }
+
+                @Override
+                public void selectSubtitle() {
+                    try {
+                        selectMySubtitle();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void selectAudioTrack() {
+                    selectMyAudioTrack();
+                }
+
+                @Override
+                public void prepared() {
+                    initSubtitleView();
+                    // 启动音频检查定时器
+                    mHandler.removeMessages(200);
+                    mHandler.sendEmptyMessageDelayed(200, 5000); // 5秒后开始第一次检查
+                }
+
+                @Override
+                public void toggleFullScreen() {
+                    activity.toggleFullPreview();
+                }
+
+                @Override
+                public void exit() {
+                    activity.onBackPressed();
+                }
+
+                @Override
+                public void cast() {
+                    activity.showCastDialog();
+                }
+
+                @Override
+                public void onHideBottom() {
+                    if (mFullWindows){
+                        ImmersionBar.with(activity)
+                                .hideBar(BarHide.FLAG_HIDE_BAR)
+                                .init();
+                    }
+                }
+
+                @Override
+                public void showSetting() {
+                    if (mFullWindows){
+                        mPlayingControlRightDialog = new XPopup.Builder(activity)
+                                .isViewMode(true)//改为view模式无法自动响应返回键操作,onBackPress时手动dismiss
+                                .hasNavigationBar(false)
+                                .popupHeight(ScreenUtils.getScreenHeight())
+                                .popupPosition(PopupPosition.Right)
+                                .asCustom(new PlayingControlRightDialog(activity,mController,mVideoView));
+                        mPlayingControlRightDialog.show();
+                    }else {
+                        mPlayingControlDialog = new XPopup.Builder(activity)
+                                .isViewMode(true)
+                                .hasNavigationBar(false)
+                                .asCustom(new PlayingControlDialog(activity,mController,mVideoView));
+                        mPlayingControlDialog.show();
+                    }
+                }
+
+                @Override
+                public void pip() {
+                    activity.enterPip();
+                }
+
+                @Override
+                public void showParseRoot(boolean show, ParseAdapter adapter) {
+                    DetailActivity activity = (DetailActivity)mActivity;
+                    activity.showParseRoot(show,adapter);
+                }
+
+                @Override
+                public void showDetail() {
+                    Toast.makeText(activity, "显示详情", Toast.LENGTH_SHORT).show();
+                }
+            });
         mVideoView.setVideoController(mController);
     }
 
@@ -359,6 +372,17 @@ public class PlayFragment extends BaseLazyFragment {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 检查并恢复音频
+     * 用于解决播放过程中声音突然消失的问题
+     */
+    private void checkAndRecoverAudio() {
+        if (mVideoView != null && mVideoView.isPlaying()) {
+            // 调用VideoView的检查和恢复音频方法
+            mVideoView.checkAndRecoverAudio();
+        }
     }
 
     /**
@@ -1090,7 +1114,7 @@ public class PlayFragment extends BaseLazyFragment {
                 mVodPlayerCfg.put("ijk", Hawk.get(HawkConfig.IJK_CODEC, ""));
             }
             if (!mVodPlayerCfg.has("sc")) {
-                mVodPlayerCfg.put("sc", Hawk.get(HawkConfig.PLAY_SCALE, 0));
+                mVodPlayerCfg.put("sc", 0);  // 强制使用默认缩放模式
             }
             if (!mVodPlayerCfg.has("sp")) {
                 mVodPlayerCfg.put("sp", 1.0f);

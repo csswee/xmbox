@@ -45,9 +45,15 @@ class HistoryActivity : BaseVbActivity<ActivityHistoryBinding>() {
                 RoomDataManger.deleteVodRecord(vodInfo.sourceKey, vodInfo)
                 if (historyAdapter!!.data.isEmpty()) {
                     mBinding.topTip.visibility = View.GONE
+                    // 当删除最后一项时隐藏删除按钮
+                    mBinding.titleBar.rightView.visibility = View.GONE
+                    showEmpty(EmptyHistoryCallback::class.java)
                 }
                 true
             }
+
+        // 初始化时隐藏删除按钮，等待数据加载后再决定是否显示
+        mBinding.titleBar.rightView.visibility = View.GONE
 
         mBinding.titleBar.rightView.setOnClickListener { view: View? ->
             // 使用MD3DialogUtils显示符合Material Design 3规范的对话框
@@ -102,8 +108,12 @@ class HistoryActivity : BaseVbActivity<ActivityHistoryBinding>() {
                 if (vodInfoList.isNotEmpty()) {
                     showSuccess()
                     mBinding.topTip.visibility = View.VISIBLE
+                    // 有内容时显示删除按钮
+                    mBinding.titleBar.rightView.visibility = View.VISIBLE
                 } else {
                     showEmpty(EmptyHistoryCallback::class.java)
+                    // 空状态时隐藏删除按钮
+                    mBinding.titleBar.rightView.visibility = View.GONE
                 }
             }
         }

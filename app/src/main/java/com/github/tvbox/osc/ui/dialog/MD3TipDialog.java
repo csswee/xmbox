@@ -2,11 +2,13 @@ package com.github.tvbox.osc.ui.dialog;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.Utils;
 import com.google.android.material.button.MaterialButton;
 import com.lxj.xpopup.core.BasePopupView;
 import com.lxj.xpopup.core.CenterPopupView;
@@ -72,6 +74,16 @@ public class MD3TipDialog extends CenterPopupView {
     @Override
     protected void onCreate() {
         super.onCreate();
+
+        // 根据主题设置背景
+        LinearLayout rootLayout = findViewById(R.id.root_layout);
+        if (rootLayout != null) {
+            if (Utils.isDarkTheme()) {
+                rootLayout.setBackgroundResource(R.drawable.bg_dialog_md3_dark);
+            } else {
+                rootLayout.setBackgroundResource(R.drawable.bg_dialog_md3_light);
+            }
+        }
 
         TextView tvTitle = findViewById(R.id.tv_title);
         TextView tvContent = findViewById(R.id.tv_content);

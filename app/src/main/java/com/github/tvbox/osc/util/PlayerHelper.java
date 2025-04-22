@@ -47,6 +47,10 @@ public class PlayerHelper {
         IJKCode codec = ApiConfig.get().getIJKCodec(ijkCode);
         PlayerFactory playerFactory;
         if (playerType == 1) {
+            // 暂时禁用IJK播放器，使用系统播放器代替
+            LOG.e("IJK播放器已暂时禁用，使用系统播放器代替");
+            playerFactory = AndroidMediaPlayerFactory.create();
+            /* 原始代码
             playerFactory = new PlayerFactory<IjkMediaPlayer>() {
                 @Override
                 public IjkMediaPlayer createPlayer(Context context) {
@@ -67,6 +71,7 @@ public class PlayerHelper {
             } catch (Throwable th) {
                 th.printStackTrace();
             }
+            */
         } else if (playerType == 2) {
             playerFactory = new PlayerFactory<EXOmPlayer>() {
                 @Override
@@ -96,6 +101,10 @@ public class PlayerHelper {
         int playType = Hawk.get(HawkConfig.PLAY_TYPE, 0);
         PlayerFactory playerFactory;
         if (playType == 1) {
+            // 暂时禁用IJK播放器，使用系统播放器代替
+            LOG.e("IJK播放器已暂时禁用，使用系统播放器代替");
+            playerFactory = AndroidMediaPlayerFactory.create();
+            /* 原始代码
             playerFactory = new PlayerFactory<IjkMediaPlayer>() {
                 @Override
                 public IjkMediaPlayer createPlayer(Context context) {
@@ -116,6 +125,7 @@ public class PlayerHelper {
             } catch (Throwable th) {
                 th.printStackTrace();
             }
+            */
         } else if (playType == 2) {
             playerFactory = new PlayerFactory<EXOmPlayer>() {
                 @Override
@@ -143,6 +153,9 @@ public class PlayerHelper {
 
 
     public static void init() {
+        // 暂时禁用IJK播放器的加载，以避免在模拟器上崩溃
+        LOG.e("IJK播放器已暂时禁用");
+        /* 原始代码
         try {
             tv.danmaku.ijk.media.player.IjkMediaPlayer.loadLibrariesOnce(new IjkLibLoader() {
                 @Override
@@ -157,6 +170,7 @@ public class PlayerHelper {
         } catch (Throwable th) {
             th.printStackTrace();
         }
+        */
     }
 
     public static String getPlayerName(int playType) {

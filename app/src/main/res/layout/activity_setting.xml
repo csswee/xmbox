@@ -16,6 +16,7 @@
         app:titleColor="?attr/colorOnSurface"
         app:rightTitleColor="?attr/colorOnSurface"
         app:leftTitleColor="?attr/colorOnSurface"
+        app:leftIcon="@null"
         app:lineVisible="false"/>
 
     <ScrollView
@@ -70,8 +71,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -109,8 +110,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -146,8 +147,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -177,12 +178,15 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
+                    <TextView
                         android:id="@+id/switchPrivateBrowsing"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:clickable="false"
-                        style="@style/Widget.App.Switch.BrightCyan"/>
+                        android:textSize="14sp"
+                        android:text="关"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"/>
                 </LinearLayout>
             </LinearLayout>
 
@@ -228,8 +232,8 @@
                             />
 
                         <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:text="@string/ms_arrow_forward"
                             style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -266,12 +270,15 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
+                    <TextView
                         android:id="@+id/switchVideoPurify"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:clickable="false"
-                        style="@style/Widget.App.Switch.Capsule"/>
+                        android:textSize="14sp"
+                        android:text="开"
+                        android:textColor="?attr/colorPrimary"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -305,8 +312,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -342,8 +349,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -384,8 +391,8 @@
                             />
 
                         <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:text="@string/ms_arrow_forward"
                             style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -437,8 +444,8 @@
                             />
 
                         <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:text="@string/ms_arrow_forward"
                             style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -484,8 +491,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -513,12 +520,15 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
 
-                    <com.google.android.material.switchmaterial.SwitchMaterial
+                    <TextView
                         android:id="@+id/switchIjkCachePlay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:clickable="false"
-                        style="@style/Widget.App.Switch.Capsule"/>
+                        android:textSize="14sp"
+                        android:text="关"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="4dp"/>
                 </LinearLayout>
 
             </LinearLayout>
@@ -553,8 +563,8 @@
                         android:layout_weight="1" />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -596,8 +606,8 @@
                             />
 
                         <TextView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:text="@string/ms_arrow_forward"
                             style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -642,8 +652,8 @@
                         />
 
                     <TextView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:text="@string/ms_arrow_forward"
                         style="@style/Widget.App.MaterialSymbols.Setting.Arrow"/>
@@ -651,34 +661,58 @@
 
 
                 <LinearLayout
+                    android:id="@+id/llCacheSize"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="12dp">
+                    android:paddingVertical="12dp"
+                    android:foreground="?android:selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvCacheSizeLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="缓存大小"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="16sp"/>
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tvCacheSize"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="14sp"
+                            android:layout_marginEnd="8dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnClearCache"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="清空缓存"
+                            android:textSize="14sp"
+                            app:cornerRadius="8dp"
+                            style="@style/Widget.Material3.Button.TonalButton" />
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/tvCacheSizeLabel"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="缓存大小"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textSize="16sp"/>
-
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnClearCache"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="清空缓存"
-                        android:textSize="14sp"
-                        app:cornerRadius="8dp"
-                        style="@style/Widget.Material3.Button.TonalButton" />
+                        android:layout_marginTop="4dp"
+                        android:text="清除应用缓存数据，包括图片和临时文件"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="12sp"/>
                 </LinearLayout>
 
             </LinearLayout>

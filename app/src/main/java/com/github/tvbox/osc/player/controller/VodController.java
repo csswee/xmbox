@@ -2,6 +2,7 @@ package com.github.tvbox.osc.player.controller;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.widget.Toast;
 import android.content.pm.ActivityInfo;
 import android.os.Handler;
 import android.os.Message;
@@ -26,16 +27,19 @@ import com.github.tvbox.osc.bean.IJKCode;
 import com.github.tvbox.osc.bean.ParseBean;
 import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.subtitle.widget.SimpleSubtitleView;
+import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.ui.adapter.ParseAdapter;
 import com.github.tvbox.osc.ui.adapter.SelectDialogAdapter;
 import com.github.tvbox.osc.ui.dialog.SelectDialog;
 import com.github.tvbox.osc.ui.widget.MyBatteryView;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.MaterialSymbols;
 import com.github.tvbox.osc.util.PlayerHelper;
 import com.github.tvbox.osc.util.ScreenUtils;
 import com.github.tvbox.osc.util.SubtitleHelper;
 import com.github.tvbox.osc.util.Utils;
+import com.github.tvbox.osc.util.MaterialSymbolsLoader;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
 import com.owen.tvrecyclerview.widget.V7LinearLayoutManager;
@@ -113,13 +117,14 @@ public class VodController extends BaseController {
 
     private LinearLayout mLlSpeed;
     TextView mTvSpeedTip;
+    TextView mLtSpeed;
     SeekBar mSeekBar;
     TextView mCurrentTime;
     TextView mTotalTime;
     boolean mIsDragging;
     View mProgressRoot;
     TextView mProgressText;
-    ImageView mProgressIcon;
+    TextView mProgressIcon;
     LinearLayout mBottomRoot;
     LinearLayout mTopRoot1;
     View mTopRoot2;
@@ -144,13 +149,14 @@ public class VodController extends BaseController {
     public TextView mZimuBtn;
     public TextView mAudioTrackBtn;
     public TextView mLandscapePortraitBtn;
-    private ImageView mIvPlayStatus;
+    private TextView mIvPlayStatus;
     private View mChooseSeries;
     public MyBatteryView mMyBatteryView;
     private View mTopRightDeviceInfo;
     public TextView mPlayRetry;
     public TextView mPlayRefresh;
-    ImageView mLockView;
+    private TextView mDetailInfo;
+    TextView mLockView;
     Handler myHandle;
     Runnable myRunnable;
     int dismissTimeOperationBar = 5000;//闲置多少毫秒隐藏操作栏(上中下)  默认6秒
@@ -177,6 +183,13 @@ public class VodController extends BaseController {
                 mVideoSize.setText(width + " x " + height);
             }
 
+            // 定期检查并恢复音频，解决声音突然消失的问题
+            if (mControlWrapper != null && !mControlWrapper.isMute()) {
+                // 先设置为静音再取消静音，强制重新初始化音频
+                mControlWrapper.setMute(true);
+                mControlWrapper.setMute(false);
+            }
+
             mHandler.postDelayed(this, 1000);
         }
     };
@@ -184,23 +197,36 @@ public class VodController extends BaseController {
         @Override
         public void run() {
             if (isLock){//上锁的才隐藏,非上锁状态随操作栏显示隐藏
+                // 确保锁图标文本和字体正确设置
+                mLockView.setText(MaterialSymbols.LOCK);
+                MaterialSymbolsLoader.apply(mLockView);
                 mLockView.setVisibility(GONE);
             }
         }
     }
+
+    // 移除对查看详情按钮的引用
 
     @Override
     protected void initView() {
         super.initView();
         View pip = findViewById(R.id.pip);
         pip.setVisibility((Utils.supportsPiPMode() && Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 2)?VISIBLE:GONE);
+
+        // 确保Material Symbols字体应用到图标
+        applyMaterialSymbolsFont();
         mMyBatteryView = findViewById(R.id.battery);
         mTopRightDeviceInfo = findViewById(R.id.container_top_right_device_info);
         mLlSpeed = findViewById(R.id.ll_speed);
         mTvSpeedTip = findViewById(R.id.tv_speed);
+        mLtSpeed = findViewById(R.id.lt_speed);
+        // 应用Material Symbols字体到加速图标
+        MaterialSymbolsLoader.apply(mLtSpeed);
         mCurrentTime = findViewById(R.id.curr_time);
         mTotalTime = findViewById(R.id.total_time);
         mPlayTitle1 = findViewById(R.id.tv_info_name1);
+        mPlayTitle1.setSelected(true); // 启用跑马灯效果
+        mDetailInfo = findViewById(R.id.tv_detail_info); // 现在这个按钮已经移动到底部控制栏
         mPlayLoadNetSpeedRightTop = findViewById(R.id.tv_play_load_net_speed_right_top);
         mSeekBar = findViewById(R.id.seekBar);
         mProgressRoot = findViewById(R.id.tv_progress_container);
@@ -209,6 +235,7 @@ public class VodController extends BaseController {
         mBottomRoot = findViewById(R.id.bottom_container);
         mTopRoot1 = findViewById(R.id.tv_top_l_container);
         mTopRoot2 = findViewById(R.id.tv_top_r_container);
+        mTopRoot2.setVisibility(VISIBLE);
         mParseRoot = findViewById(R.id.parse_root);
         mGridView = findViewById(R.id.mGridView);
         mNextBtn = findViewById(R.id.play_next);
@@ -232,6 +259,12 @@ public class VodController extends BaseController {
         mChooseSeries = findViewById(R.id.choose_series);
         mLockView = findViewById(R.id.iv_lock);
 
+        // 功能按钮栏已被移除
+        View functionButtonsContainer = findViewById(R.id.function_buttons_container);
+        if (functionButtonsContainer != null) {
+            functionButtonsContainer.setVisibility(GONE);
+        }
+
         initSubtitleInfo();
 
         myHandle = new Handler();
@@ -239,12 +272,14 @@ public class VodController extends BaseController {
         mLockView.setOnClickListener(v -> {
             isLock = !isLock;
             if (isLock){// 上了锁
-                mLockView.setImageResource(R.drawable.ic_lock_m3);
+                mLockView.setText(MaterialSymbols.LOCK);
+                MaterialSymbolsLoader.apply(mLockView); // 确保字体正确应用
                 hideBottom();
                 mHandler.removeCallbacks(lockRunnable);
                 mHandler.postDelayed(lockRunnable,dismissTimeLock);
             }else {// 解了锁
-                mLockView.setImageResource(R.drawable.ic_unlock_m3);
+                mLockView.setText(MaterialSymbols.LOCK_OPEN);
+                MaterialSymbolsLoader.apply(mLockView); // 确保字体正确应用
                 showBottom();
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, dismissTimeOperationBar);
@@ -256,6 +291,9 @@ public class VodController extends BaseController {
             public boolean onTouch(View v, MotionEvent event) {
                 if (isLock) {
                     if (event.getAction() == MotionEvent.ACTION_UP) {//短暂显示上锁view,lockRunnable统一隐藏上锁view
+                        // 确保锁图标文本和字体正确设置
+                        mLockView.setText(MaterialSymbols.LOCK);
+                        MaterialSymbolsLoader.apply(mLockView);
                         mLockView.setVisibility(VISIBLE);
                         mHandler.removeCallbacks(lockRunnable);
                         mHandler.postDelayed(lockRunnable, dismissTimeLock);
@@ -324,7 +362,12 @@ public class VodController extends BaseController {
             }
         });
 
-        mTopRoot1.setOnClickListener(view -> listener.exit());
+        // 将整个左上角区域的点击事件改为退出播放
+        mTopRoot1.setOnClickListener(view -> {
+            if (listener != null) {
+                listener.exit();
+            }
+        });
 
         mPlayRetry = findViewById(R.id.play_retry);
         mPlayRetry.setOnClickListener(v -> {
@@ -359,10 +402,11 @@ public class VodController extends BaseController {
             listener.toggleFullScreen();
             hideBottom();
         });
-        findViewById(R.id.cast).setOnClickListener(view -> {
-            listener.cast();
-            hideBottom();
-        });
+        // 隐藏投屏按钮
+        View castBtn = findViewById(R.id.cast);
+        if (castBtn != null) {
+            castBtn.setVisibility(GONE);
+        }
         pip.setOnClickListener(view -> {//画中画
             if (isInPlaybackState()){
                 listener.pip();
@@ -598,6 +642,11 @@ public class VodController extends BaseController {
             listener.chooseSeries();
         });
 
+        // 隐藏详情按钮
+        if (mDetailInfo != null) {
+            mDetailInfo.setVisibility(GONE);
+        }
+
         findViewById(R.id.container_playing_setting).setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -720,7 +769,14 @@ public class VodController extends BaseController {
     }
 
     public void setTitle(String playTitleInfo) {
-        mPlayTitle1.setText(playTitleInfo);
+        // 隐藏标题文本
+        if (mPlayTitle1 != null) {
+            mPlayTitle1.setVisibility(GONE);
+        }
+        // 确保左上角区域可见，作为返回按钮
+        mTopRoot1.setVisibility(VISIBLE);
+        // 强制将左上角区域置于最上层
+        mTopRoot1.bringToFront();
     }
 
     public void resetSpeed() {
@@ -736,6 +792,8 @@ public class VodController extends BaseController {
      */
     public void changedLandscape(boolean b) {
         mPlayTitle1.setSelected(true);
+        // 确保顶部控制栏可见
+        mTopRoot1.setVisibility(VISIBLE);
         if (b) {
             mPreBtn.setVisibility(VISIBLE);
             mNextBtn.setVisibility(VISIBLE);
@@ -786,6 +844,8 @@ public class VodController extends BaseController {
         void pip();
 
         void showParseRoot(boolean show,ParseAdapter adapter);
+
+        void showDetail();
     }
 
     public void setListener(VodControlListener listener) {
@@ -868,10 +928,12 @@ public class VodController extends BaseController {
     protected void updateSeekUI(int curr, int seekTo, int duration) {
         super.updateSeekUI(curr, seekTo, duration);
         if (seekTo > curr) {
-            mProgressIcon.setImageResource(R.drawable.icon_pre);
+            mProgressIcon.setText(MaterialSymbols.FAST_FORWARD);
         } else {
-            mProgressIcon.setImageResource(R.drawable.icon_back);
+            mProgressIcon.setText(MaterialSymbols.FAST_REWIND);
         }
+        // 应用Material Symbols字体
+        MaterialSymbolsLoader.apply(mProgressIcon);
         mProgressText.setText(PlayerUtils.stringForTime(seekTo) + " / " + PlayerUtils.stringForTime(duration));
         mHandler.sendEmptyMessage(1000);
         mHandler.removeMessages(1001);
@@ -889,10 +951,11 @@ public class VodController extends BaseController {
             case VideoView.STATE_PLAYING:
                 initLandscapePortraitBtnInfo();
                 startProgress();
-                mIvPlayStatus.setImageResource(R.drawable.ic_pause_m3);
+                mIvPlayStatus.setText(MaterialSymbols.PAUSE);
+                mPlayTitle1.setSelected(true); // 启用跑马灯效果
                 break;
             case VideoView.STATE_PAUSED:
-                mIvPlayStatus.setImageResource(R.drawable.ic_play_status_m3);
+                mIvPlayStatus.setText(MaterialSymbols.PLAY_ARROW);
                 break;
             case VideoView.STATE_ERROR:
                 listener.errReplay();
@@ -901,6 +964,7 @@ public class VodController extends BaseController {
                 mPlayLoadNetSpeed.setVisibility(GONE);
                 hideLiveAboutBtn();
                 listener.prepared();
+                mPlayTitle1.setSelected(true); // 启用跑马灯效果
                 break;
             case VideoView.STATE_BUFFERED:
                 mPlayLoadNetSpeed.setVisibility(GONE);
@@ -922,11 +986,56 @@ public class VodController extends BaseController {
     void showBottom() {
         mHandler.removeMessages(1003);
         mHandler.sendEmptyMessage(1002);
+        // 确保标题显示
+        mTopRoot1.setVisibility(VISIBLE);
+        // 强制将标题区域置于最上层
+        mTopRoot1.bringToFront();
     }
 
     public void hideBottom() {
         mHandler.removeMessages(1002);
+        // 隐藏底部控制栏和标题区域
         mHandler.sendEmptyMessage(1003);
+    }
+
+    /**
+     * 应用Material Symbols字体到图标
+     */
+    private void applyMaterialSymbolsFont() {
+        try {
+            // 获取图标TextView
+            TextView pipIcon = findViewById(R.id.pip);
+            TextView castIcon = findViewById(R.id.cast);
+            TextView settingIcon = findViewById(R.id.setting);
+            TextView playStatusIcon = findViewById(R.id.play_status);
+            TextView lockIcon = findViewById(R.id.iv_lock);
+
+            // 直接设置图标和字体
+            if (pipIcon != null) {
+                pipIcon.setText(MaterialSymbols.PICTURE_IN_PICTURE);
+                MaterialSymbolsLoader.apply(pipIcon);
+            }
+            if (castIcon != null) {
+                castIcon.setText(MaterialSymbols.CAST);
+                MaterialSymbolsLoader.apply(castIcon);
+            }
+            if (settingIcon != null) {
+                settingIcon.setText(MaterialSymbols.SETTINGS);
+                MaterialSymbolsLoader.apply(settingIcon);
+            }
+            if (playStatusIcon != null) {
+                // 初始状态设为暂停图标
+                playStatusIcon.setText(MaterialSymbols.PAUSE);
+                MaterialSymbolsLoader.apply(playStatusIcon);
+            }
+            if (lockIcon != null) {
+                // 初始状态设为解锁图标
+                lockIcon.setText(MaterialSymbols.LOCK_OPEN);
+                MaterialSymbolsLoader.apply(lockIcon);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1095,13 +1204,15 @@ public class VodController extends BaseController {
             view.setVisibility(View.VISIBLE);
             view.animate()
                     .alpha(1.0f)
-                    .setDuration(100)
+                    .setDuration(200)
                     .setInterpolator(new AccelerateInterpolator())
                     .start();
         } else {
+            // 如果是标题容器，使用更长的动画时间
+            int duration = (view == mTopRoot1) ? 300 : 200;
             view.animate()
                     .alpha(0.0f)
-                    .setDuration(100)
+                    .setDuration(duration)
                     .setInterpolator(new AccelerateInterpolator())
                     .withEndAction(() -> view.setVisibility(View.GONE))
                     .start();

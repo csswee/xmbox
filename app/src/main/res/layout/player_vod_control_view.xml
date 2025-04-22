@@ -10,47 +10,73 @@
 
     <LinearLayout
             android:id="@+id/tv_top_l_container"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            tools:visibility="visible"
-            android:layout_marginStart="@dimen/dp_20"
-            android:layout_marginLeft="@dimen/dp_20"
-            android:layout_marginTop="22dp"
-            android:orientation="vertical">
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:visibility="visible"
+            android:layout_marginStart="@dimen/dp_12"
+            android:layout_marginLeft="@dimen/dp_12"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="@dimen/dp_20"
+            android:layout_marginEnd="@dimen/dp_20"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_gravity="top|left">
 
             <TextView
                 android:id="@+id/tv_info_name1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxWidth="200dp"
-                android:ellipsize="marquee"
-                android:singleLine="true"
-                tools:text="http://http://http://http://http://http://http://"
-                android:textColor="@color/white"
-                android:drawablePadding="20dp"
-                android:drawableLeft="@drawable/dkplayer_ic_action_arrow_back"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
+                android:visibility="gone"
                  />
 
             <TextView
-                android:id="@+id/tv_videosize"
+                android:id="@+id/tv_back_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:paddingLeft="@dimen/dp_20"
-                android:tag="vod_video_size"
-                tools:text="1024 x 768"
                 android:textColor="@color/white"
+                android:textSize="24sp"
+                android:fontFamily="@font/material_symbols_rounded"
+                style="@style/Widget.App.MaterialSymbols"
+                android:text="@string/ms_arrow_back"
                  />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tv_videosize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="left"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:paddingLeft="@dimen/dp_20"
+                    android:tag="vod_video_size"
+                    tools:text="1024 x 768"
+                    android:textColor="@color/white"
+                    android:visibility="gone"
+                     />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- 移除上方的查看详情按钮，已移动到底部控制栏 -->
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </LinearLayout>
 
     </LinearLayout>
 
-    <ImageView
+    <TextView
         android:id="@+id/iv_lock"
         android:layout_width="40dp"
         android:layout_height="40dp"
@@ -58,8 +84,12 @@
         android:layout_marginHorizontal="24dp"
         android:clickable="true"
         android:focusable="true"
-        android:paddingHorizontal="6dp"
-        android:src="@drawable/ic_unlock_m3"
+        android:gravity="center"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:fontFamily="@font/material_symbols_rounded"
+        style="@style/Widget.App.MaterialSymbols"
+        android:text="@string/ms_lock_open"
         android:visibility="invisible"
         tools:visibility="visible"/>
 
@@ -67,11 +97,13 @@
         android:id="@+id/tv_top_r_container"
         android:layout_width="wrap_content"
         android:layout_height="71dp"
-        android:layout_gravity="end"
+        android:layout_gravity="end|top"
         android:layout_marginRight="@dimen/dp_20"
+        android:layout_marginTop="0dp"
         android:gravity="end"
         android:orientation="vertical"
-        android:visibility="gone"
+        android:visibility="visible"
+        android:elevation="10dp"
         tools:visibility="visible">
 
         <LinearLayout
@@ -114,43 +146,10 @@
                 android:layout_toEndOf="@+id/tv_sys_time" />
         </LinearLayout>
 
-        <LinearLayout
+        <include
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end">
-
-            <ImageView
-                android:id="@+id/pip"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="8dp"
-                android:padding="3dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/picture_in_picture_alt_20px"
-                android:tint="@color/white" />
-
-            <ImageView
-                android:id="@+id/cast"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="8dp"
-                android:padding="4dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/cast_20"
-                android:layout_marginStart="4dp"
-                android:tint="@color/white" />
-
-            <ImageView
-                android:id="@+id/setting"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:scaleType="centerCrop"
-                android:padding="4dp"
-                android:src="@drawable/ic_player_setting_m3"
-                android:tint="@color/white"
-                android:layout_marginStart="4dp" />
-
-        </LinearLayout>
+            layout="@layout/player_top_right_icons" />
 
     </LinearLayout>
 
@@ -180,6 +179,14 @@
         android:paddingTop="@dimen/dp_20"
         android:visibility="gone"
         tools:visibility="visible">
+
+        <!-- 功能按钮栏 -->
+        <include
+            android:id="@+id/function_buttons"
+            layout="@layout/player_function_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp" />
 
         <LinearLayout
             android:id="@+id/parse_root"
@@ -221,13 +228,16 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <androidx.appcompat.widget.AppCompatImageView
+            <TextView
                 android:id="@+id/play_status"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:scaleType="centerCrop"
-                android:padding="4dp"
-                android:src="@drawable/ic_pause_m3"/>
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:textSize="36sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/material_symbols_rounded"
+                style="@style/Widget.App.MaterialSymbols"
+                android:text="@string/ms_pause"/>
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/play_pre"
@@ -305,6 +315,20 @@
                 android:text="选集"
                 android:textSize="16sp"
                 android:layout_marginLeft="4dp"
+                />
+
+            <TextView
+                android:id="@+id/tv_detail_info"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:scaleType="centerCrop"
+                android:padding="4dp"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:text="详情"
+                android:textSize="16sp"
+                android:layout_marginLeft="4dp"
+                android:visibility="gone"
                 />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -552,13 +576,17 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <ImageView
+            <TextView
                 android:id="@+id/tv_progress_icon"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/material_symbols_rounded"
+                style="@style/Widget.App.MaterialSymbols"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
-                tools:src="@drawable/icon_back" />
+                tools:text="@string/ms_fast_rewind" />
 
             <TextView
                 android:id="@+id/tv_progress_text"
@@ -612,18 +640,15 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <com.airbnb.lottie.LottieAnimationView
+        <TextView
             android:id="@+id/lt_speed"
-            android:layout_width="60dp"
-            android:layout_height="30dp"
-            android:scaleX="3"
-            android:scaleY="2"
-            app:lottie_autoPlay="true"
-            android:scaleType="centerCrop"
-            app:lottie_fileName="forward_speed.json"
-            app:lottie_loop="true"
-            app:lottie_colorFilter="@color/white"
-            app:lottie_repeatMode="restart"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="32sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/material_symbols_rounded"
+            style="@style/Widget.App.MaterialSymbols"
+            android:text="@string/ms_fast_forward"/>
         <TextView
             android:id="@+id/tv_speed"
             android:layout_width="wrap_content"
