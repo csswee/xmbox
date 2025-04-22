@@ -10,7 +10,7 @@
         android:id="@+id/title_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        app:title="设置"
+        app:title="XMBOX"
         app:titleStyle="bold"
         android:background="?attr/colorSurface"
         app:titleColor="?attr/colorOnSurface"
@@ -706,13 +706,6 @@
                             style="@style/Widget.Material3.Button.TonalButton" />
                     </LinearLayout>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="清除应用缓存数据，包括图片和临时文件"
-                        android:textColor="?attr/colorOnSurfaceVariant"
-                        android:textSize="12sp"/>
                 </LinearLayout>
 
             </LinearLayout>
