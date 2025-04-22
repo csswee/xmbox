@@ -66,16 +66,14 @@ public class LocalPlayActivity extends BaseVbActivity<ActivityLocalPlayBinding> 
         mVideoView.setVideoController(mController); //设置控制器
         play(false);
 
-        new Handler()
-                .postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mVideoView.getCurrentPlayState() == VideoView.STATE_PREPARED){//不知道为啥部分长视频(不确定是不是因为时长/大小)会卡在准备完成状态,所以延迟重置下状态
-                            mVideoView.pause();
-                            mVideoView.resume();
-                        }
-                    }
-                },500);
+        // 使用View的postDelayed方法避免内存泄漏
+        mBinding.player.postDelayed(() -> {
+            if (mVideoView != null && mVideoView.getCurrentPlayState() == VideoView.STATE_PREPARED) {
+                //不知道为啥部分长视频(不确定是不是因为时长/大小)会卡在准备完成状态,所以延迟重置下状态
+                mVideoView.pause();
+                mVideoView.resume();
+            }
+        }, 500);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

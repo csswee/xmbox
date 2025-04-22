@@ -7,10 +7,9 @@ import androidx.annotation.NonNull;
 
 import com.blankj.utilcode.util.ToastUtils;
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.Utils;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.checkbox.MaterialCheckBox;
-import com.google.android.material.radiobutton.MaterialRadioButton;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.lxj.xpopup.core.CenterPopupView;
 
@@ -41,9 +40,33 @@ public class SubsciptionDialog extends CenterPopupView {
     }
 
     @Override
+    protected int getPopupHeight() {
+        return -2; // Wrap content
+    }
+
+    @Override
+    protected int getMaxHeight() {
+        return -1; // No max height
+    }
+
+    @Override
+    protected void beforeShow() {
+        super.beforeShow();
+        // 在beforeShow中设置背景，确保在显示前应用
+        View rootView = getPopupImplView();
+        if (Utils.isDarkTheme()) {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_dark);
+        } else {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
+        }
+    }
+
+    @Override
     protected void onCreate() {
         super.onCreate();
         View rootView = getPopupImplView();
+
+        // 背景已在beforeShow中设置
 
         TextInputEditText etName = rootView.findViewById(R.id.et_name);
         TextInputEditText etUrl = rootView.findViewById(R.id.et_url);

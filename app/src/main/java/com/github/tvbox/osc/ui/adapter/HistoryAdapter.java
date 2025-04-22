@@ -14,10 +14,9 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.VodInfo;
-import com.github.tvbox.osc.picasso.RoundTransformation;
 import com.github.tvbox.osc.util.DefaultConfig;
+import com.github.tvbox.osc.util.GlideHelper;
 import com.github.tvbox.osc.util.MD5;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -55,13 +54,9 @@ public class HistoryAdapter extends BaseQuickAdapter<VodInfo, BaseViewHolder> {
         helper.setText(R.id.tvName, item.name);
         // helper.setText(R.id.tvActor, item.actor);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
-        //由于部分电视机使用glide报错
+        // 使用Glide加载图片
         if (!TextUtils.isEmpty(item.pic)) {
-            Picasso.get()
-                    .load(DefaultConfig.checkReplaceProxy(item.pic))
-                    .placeholder(R.drawable.img_loading_placeholder)
-                    .error(R.drawable.img_loading_placeholder)
-                    .into(ivThumb);
+            GlideHelper.loadImage(ivThumb, DefaultConfig.checkReplaceProxy(item.pic), 300, 400);
         } else {
             ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }

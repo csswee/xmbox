@@ -32,7 +32,7 @@
                 android:padding="5dp"
                 android:singleLine="true"
                 tools:text="1970"
-                android:textColor="?attr/colorOnTertiary"
+                android:textColor="@color/white"
                 android:textSize="10dp" />
         </com.lihang.ShadowLayout>
 
@@ -54,7 +54,7 @@
                 android:ellipsize="end"
                 android:gravity="center"
                 android:singleLine="true"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/white"
                 tools:text="更新至10集"
                 android:textSize="12sp"
                 android:drawablePadding="4dp"
@@ -67,7 +67,7 @@
                 android:ellipsize="marquee"
                 android:marqueeRepeatLimit="marquee_forever"
                 android:layout_marginTop="4dp"
-                android:textColor="?attr/colorOnSurface"
+                android:textColor="@color/white"
                 tools:text="爱上大大"
                 android:singleLine="true"/>
 

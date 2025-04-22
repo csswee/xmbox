@@ -7,6 +7,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.Utils;
 import com.google.android.material.button.MaterialButton;
 import com.lxj.xpopup.core.CenterPopupView;
 
@@ -26,8 +27,8 @@ public class ConfirmDialog extends CenterPopupView {
         default void onCancel() {}
     }
 
-    public ConfirmDialog(@NonNull Context context, String title, String content, 
-                         String cancelText, String confirmText, 
+    public ConfirmDialog(@NonNull Context context, String title, String content,
+                         String cancelText, String confirmText,
                          OnDialogActionListener listener) {
         super(context);
         this.title = title;
@@ -43,26 +44,64 @@ public class ConfirmDialog extends CenterPopupView {
     }
 
     @Override
+    protected int getPopupHeight() {
+        return -2; // Wrap content
+    }
+
+    @Override
+    protected int getMaxHeight() {
+        return -1; // No max height
+    }
+
+    @Override
+    protected void beforeShow() {
+        super.beforeShow();
+        // 在beforeShow中设置背景，确保在显示前应用
+        View rootView = getPopupImplView();
+        if (Utils.isDarkTheme()) {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_dark);
+        } else {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
+        }
+    }
+
+    @Override
     protected void onCreate() {
         super.onCreate();
-        
+        View rootView = getPopupImplView();
+
+        // 背景已在beforeShow中设置
+
         TextView tvTitle = findViewById(R.id.tv_title);
         TextView tvContent = findViewById(R.id.tv_content);
         MaterialButton btnCancel = findViewById(R.id.btn_cancel);
         MaterialButton btnConfirm = findViewById(R.id.btn_confirm);
-        
+
         tvTitle.setText(title);
         tvContent.setText(content);
-        btnCancel.setText(cancelText);
-        btnConfirm.setText(confirmText);
-        
+
+        // 设置取消按钮
+        if (cancelText != null && !cancelText.isEmpty()) {
+            btnCancel.setText(cancelText);
+            btnCancel.setVisibility(View.VISIBLE);
+        } else {
+            btnCancel.setVisibility(View.GONE);
+        }
+
+        // 设置确认按钮
+        if (confirmText != null && !confirmText.isEmpty()) {
+            btnConfirm.setText(confirmText);
+        } else {
+            btnConfirm.setText("确定");
+        }
+
         btnCancel.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onCancel();
             }
             dismiss();
         });
-        
+
         btnConfirm.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onConfirm();

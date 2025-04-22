@@ -146,32 +146,36 @@
             android:orientation="vertical"
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
-            android:background="#33FFFFFF">
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@color/search_category_bg">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_search_word"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingVertical="5dp"/>
+                android:paddingVertical="5dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:descendantFocusability="afterDescendants"/>
         </LinearLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/llLayout"
             android:layout_toEndOf="@+id/llWord"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
 
-
+            <!-- 使用FrameLayout而不是LinearLayout，这样两个RecyclerView可以叠加 -->
             <com.owen.tvrecyclerview.widget.TvRecyclerView
                 android:id="@+id/mGridView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:visibility="invisible"
+                android:visibility="visible"
                 app:tv_horizontalSpacingWithMargins="@dimen/dp_5"
                 app:tv_selectedItemIsCentered="true"
                 app:tv_verticalSpacingWithMargins="@dimen/dp_5" />
@@ -182,12 +186,11 @@
                 android:layout_height="match_parent"
                 android:clipChildren="false"
                 android:clipToPadding="false"
-                android:visibility="invisible"
+                android:visibility="gone"
                 app:tv_horizontalSpacingWithMargins="@dimen/dp_5"
                 app:tv_selectedItemIsCentered="true"
                 app:tv_verticalSpacingWithMargins="@dimen/dp_5" />
 
-
-        </LinearLayout>
+        </FrameLayout>
     </RelativeLayout>
 </LinearLayout>

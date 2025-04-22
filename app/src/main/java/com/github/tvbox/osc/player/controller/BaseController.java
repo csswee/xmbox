@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import java.lang.ref.WeakReference;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -56,30 +58,46 @@ public abstract class BaseController extends BaseVideoController implements Gest
 
     public BaseController(@NonNull Context context) {
         super(context);
-        mHandler = new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                int what = msg.what;
-                switch (what) {
-                    case 100: { // 亮度+音量调整
-                        mSlideInfo.setVisibility(VISIBLE);
-                        mSlideInfo.setText(msg.obj.toString());
-                        break;
-                    }
+        mHandler = new ControllerHandler(this);
+    }
 
-                    case 101: { // 亮度+音量调整 关闭
-                        mSlideInfo.setVisibility(GONE);
-                        break;
+    // 使用静态内部类处理Handler消息，避免内存泄漏
+    private static class ControllerHandler extends Handler {
+        private final WeakReference<BaseController> mController;
+
+        public ControllerHandler(BaseController controller) {
+            super(Looper.getMainLooper());
+            mController = new WeakReference<>(controller);
+        }
+
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            BaseController controller = mController.get();
+            if (controller == null) return;
+
+            int what = msg.what;
+            switch (what) {
+                case 100: { // 亮度+音量调整
+                    if (controller.mSlideInfo != null) {
+                        controller.mSlideInfo.setVisibility(VISIBLE);
+                        controller.mSlideInfo.setText(msg.obj.toString());
                     }
-                    default: {
-                        if (mHandlerCallback != null)
-                            mHandlerCallback.callback(msg);
-                        break;
-                    }
+                    break;
                 }
-                return false;
+
+                case 101: { // 亮度+音量调整 关闭
+                    if (controller.mSlideInfo != null) {
+                        controller.mSlideInfo.setVisibility(GONE);
+                    }
+                    break;
+                }
+                default: {
+                    if (controller.mHandlerCallback != null)
+                        controller.mHandlerCallback.callback(msg);
+                    break;
+                }
             }
-        });
+        }
     }
 
     public BaseController(@NonNull Context context, @Nullable AttributeSet attrs) {

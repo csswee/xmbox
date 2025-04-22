@@ -13,14 +13,12 @@ import com.github.tvbox.osc.util.MD3ToastUtils;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.VodInfo;
 import com.github.tvbox.osc.databinding.DialogVideoDetailBinding;
-import com.github.tvbox.osc.picasso.RoundTransformation;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.util.DefaultConfig;
-import com.github.tvbox.osc.util.MD5;
+import com.github.tvbox.osc.util.GlideHelper;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.util.SmartGlideImageLoader;
-import com.squareup.picasso.Picasso;
 
 import me.jessyan.autosize.utils.AutoSizeUtils;
 
@@ -67,11 +65,7 @@ public class VideoDetailDialog extends BottomPopupView {
         });
         String picUrl = DefaultConfig.checkReplaceProxy(mVideo.pic);
         if (!TextUtils.isEmpty(picUrl)){
-            Picasso.get()
-                    .load(picUrl)
-                    .placeholder(R.drawable.img_loading_placeholder)
-                    .error(R.drawable.img_loading_placeholder)
-                    .into(binding.ivThum);
+            GlideHelper.loadImage(binding.ivThum, picUrl);
 
             binding.llThum.setOnClickListener(view -> {
                 // 单张图片场景

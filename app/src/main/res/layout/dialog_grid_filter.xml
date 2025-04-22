@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    app:hl_cornerRadius_leftTop="16dp"
-    app:hl_cornerRadius_rightTop="16dp"
-    app:hl_layoutBackground="?attr/colorSurface">
+    app:hl_cornerRadius_leftTop="28dp"
+    app:hl_cornerRadius_rightTop="28dp"
+    app:hl_layoutBackground="?attr/colorSurfaceContainerHigh">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +32,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="16dp"
             android:paddingHorizontal="24dp"
-            android:gravity="center">
+            android:gravity="end">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_reset"

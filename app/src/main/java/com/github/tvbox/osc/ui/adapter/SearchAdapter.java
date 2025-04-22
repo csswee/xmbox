@@ -8,11 +8,10 @@ import com.chad.library.adapter.base.BaseViewHolder;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.api.ApiConfig;
 import com.github.tvbox.osc.bean.Movie;
-import com.github.tvbox.osc.picasso.RoundTransformation;
+import com.github.tvbox.osc.util.GlideHelper;
 import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.MD5;
 import com.orhanobut.hawk.Hawk;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -33,15 +32,10 @@ public class SearchAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder>
             }
             ImageView ivThumb = helper.getView(R.id.ivThumb);
             if (!TextUtils.isEmpty(item.pic)) {
-                Picasso.get()
-                        .load(item.pic)
-                        .transform(new RoundTransformation(MD5.string2MD5(item.pic + "position=" + helper.getLayoutPosition()))
-                                .centerCorp(true)
-                                .override(AutoSizeUtils.dp2px(mContext, 100), AutoSizeUtils.dp2px(mContext, 140))
-                                .roundRadius(AutoSizeUtils.dp2px(mContext, 20), RoundTransformation.RoundType.ALL))
-                        .placeholder(R.drawable.img_loading_placeholder)
-                        .error(R.drawable.img_loading_placeholder)
-                        .into(ivThumb);
+                int width = AutoSizeUtils.dp2px(mContext, 100);
+                int height = AutoSizeUtils.dp2px(mContext, 140);
+                int radius = AutoSizeUtils.dp2px(mContext, 20);
+                GlideHelper.loadRoundedImage(ivThumb, item.pic, width, height, radius);
             } else {
                 ivThumb.setImageResource(R.drawable.img_loading_placeholder);
             }

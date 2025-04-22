@@ -47,7 +47,7 @@ public class AllLocalSeriesDialog extends DrawerPopupView {
         super.onCreate();
         View bg = findViewById(R.id.bg);
         bg.setBackgroundColor(ColorUtils.getColor(R.color.bg_popup));
-        findViewById(R.id.v_gesture_line).setVisibility(GONE);
+        // 拖动条现在使用include布局，不需要单独隐藏
         RecyclerView rv = findViewById(R.id.rv);
 
         // 固定使用8列，确保所有集数都能正确显示

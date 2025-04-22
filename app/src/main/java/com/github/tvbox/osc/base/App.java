@@ -125,6 +125,16 @@ public class App extends MultiDexApplication {
     public void onTerminate() {
         super.onTerminate();
         JsLoader.load();
+        // 清理资源
+        vodInfo = null;
+        // 清理VideoView引用
+        try {
+            xyz.doikki.videoplayer.player.VideoViewManager.instance().removeAll();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // 关闭线程池
+        com.github.tvbox.osc.util.ThreadPoolManager.shutdown();
     }
 
     private void putDefault(String key, Object value) {
@@ -140,6 +150,14 @@ public class App extends MultiDexApplication {
     }
     public VodInfo getVodInfo(){
         return this.vodInfo;
+    }
+
+    /**
+     * 清除当前保存的视频信息
+     * 在不需要时调用此方法避免内存泄漏
+     */
+    public void clearVodInfo() {
+        this.vodInfo = null;
     }
 
     public static P2PClass getp2p() {

@@ -9,15 +9,6 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <com.lihang.ShadowLayout
-        android:id="@+id/v_gesture_line"
-        android:layout_width="30dp"
-        android:layout_height="2dp"
-        app:hl_cornerRadius="10dp"
-        app:hl_layoutBackground="@color/gray_darker"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <com.lihang.ShadowLayout
         android:id="@+id/ll_thum"
@@ -52,7 +43,6 @@
         android:layout_marginLeft="20dp"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="鬼灭之刃"
-        android:layout_marginTop="20dp"
         android:textColor="@color/text_foreground"/>
 
     <TextView

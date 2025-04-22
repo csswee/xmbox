@@ -32,8 +32,27 @@ public class LastViewedDialog extends PositionPopupView {
     }
 
     @Override
+    protected void beforeShow() {
+        super.beforeShow();
+        // 确保弹窗背景是透明的，让卡片背景显示出来
+        getPopupImplView().setBackgroundResource(android.R.color.transparent);
+    }
+
+    @Override
     protected void onCreate() {
         super.onCreate();
+        View rootView = getPopupImplView();
+
+        // 根据当前主题设置卡片背景颜色
+        MaterialCardView cardView = rootView.findViewById(R.id.card_view);
+        if (cardView != null) {
+            if (Utils.isDarkTheme()) {
+                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.color_dialog_bg_dark));
+            } else {
+                cardView.setCardBackgroundColor(getContext().getResources().getColor(R.color.white));
+            }
+        }
+
         TextView textView = findViewById(R.id.tv);
         textView.setText("上次看到: "+vodInfo.name+" "+vodInfo.note);
 

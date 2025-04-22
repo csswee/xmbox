@@ -346,12 +346,19 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
-                    if (action != null && action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
-                        openBackgroundPlay = Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 1 && playFragment.getPlayer() != null && playFragment.getPlayer().isPlaying();
+                    if (action != null && action.equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS) &&
+                        playFragment != null && playFragment.getPlayer() != null) {
+                        openBackgroundPlay = Hawk.get(HawkConfig.BACKGROUND_PLAY_TYPE, 0) == 1 &&
+                                            playFragment.getPlayer().isPlaying();
                     }
                 }
             };
-            registerReceiver(mHomeKeyReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+            try {
+                registerReceiver(mHomeKeyReceiver, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+            } catch (Exception e) {
+                e.printStackTrace();
+                mHomeKeyReceiver = null;
+            }
         }
     }
 
@@ -819,13 +826,25 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     protected void onDestroy() {
         registerActionReceiver(false);
         super.onDestroy();
-        unregisterReceiver(mBatteryReceiver);
+
         // 注销广播接收器
+        try {
+            unregisterReceiver(mBatteryReceiver);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 注销Home键广播接收器
         if (mHomeKeyReceiver != null) {
-            unregisterReceiver(mHomeKeyReceiver);
+            try {
+                unregisterReceiver(mHomeKeyReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             mHomeKeyReceiver = null;
         }
 
+        // 关闭线程池
         try {
             if (searchExecutorService != null) {
                 searchExecutorService.shutdownNow();
@@ -834,10 +853,65 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
         } catch (Throwable th) {
             th.printStackTrace();
         }
+
+        // 取消网络请求
         OkGo.getInstance().cancelTag("fenci");
         OkGo.getInstance().cancelTag("detail");
         OkGo.getInstance().cancelTag("quick_search");
+
+        // 停止截屏监听
         toggleScreenShotListen(false);
+
+        // 清理对话框引用
+        if (mAllSeriesRightDialog != null) {
+            try {
+                if (mAllSeriesRightDialog.isShow()) {
+                    mAllSeriesRightDialog.dismiss();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            mAllSeriesRightDialog = null;
+        }
+
+        if (mAllSeriesBottomDialog != null) {
+            try {
+                if (mAllSeriesBottomDialog.isShow()) {
+                    mAllSeriesBottomDialog.dismiss();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            mAllSeriesBottomDialog = null;
+        }
+
+        // 清理适配器引用
+        if (seriesFlagAdapter != null) {
+            seriesFlagAdapter.setNewData(null);
+            seriesFlagAdapter = null;
+        }
+
+        if (seriesAdapter != null) {
+            seriesAdapter.setNewData(null);
+            seriesAdapter = null;
+        }
+
+        // 清理播放器引用
+        playFragment = null;
+
+        // 清理其他引用
+        mVideo = null;
+        vodInfo = null;
+        mCheckSources = null;
+        pauseRunnable = null;
+        quickSearchWord.clear();
+        quickSearchData.clear();
+
+        // 清理App中的vodInfo引用
+        App.getInstance().clearVodInfo();
+
+        // 清理ViewModel引用
+        sourceViewModel = null;
     }
 
     @Override
@@ -1021,7 +1095,8 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
 
                 @Override
                 public void onReceive(Context context, Intent intent) {
-                    if (intent == null || !intent.getAction().equals(IntentKey.BROADCAST_ACTION) || playFragment.getController() == null) {
+                    if (intent == null || !intent.getAction().equals(IntentKey.BROADCAST_ACTION) ||
+                        playFragment == null || playFragment.getController() == null) {
                         return;
                     }
 
@@ -1039,13 +1114,23 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     }
                 }
             };
-            registerReceiver(mRemoteActionReceiver, new IntentFilter(IntentKey.BROADCAST_ACTION));
-        } else {
-            if (mRemoteActionReceiver != null) {
-                unregisterReceiver(mRemoteActionReceiver);
+            try {
+                registerReceiver(mRemoteActionReceiver, new IntentFilter(IntentKey.BROADCAST_ACTION));
+            } catch (Exception e) {
+                e.printStackTrace();
                 mRemoteActionReceiver = null;
             }
-            if (playFragment.getPlayer().isPlaying()) {// 退出画中画时,暂停播放(画中画的全屏也会触发,但全屏后会自动播放)
+        } else {
+            if (mRemoteActionReceiver != null) {
+                try {
+                    unregisterReceiver(mRemoteActionReceiver);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                mRemoteActionReceiver = null;
+            }
+            if (playFragment != null && playFragment.getPlayer() != null && playFragment.getPlayer().isPlaying()) {
+                // 退出画中画时,暂停播放(画中画的全屏也会触发,但全屏后会自动播放)
                 playFragment.getController().togglePlay();
             }
         }
@@ -1062,9 +1147,16 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
      */
     private void playServerSwitch(boolean open) {
         if (open) {
-            VodInfo.VodSeries vod = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
-            PlayService.start(playFragment.getPlayer(), vodInfo.name + "&&" + vod.name);
-            registerActionReceiver(true);
+            if (vodInfo != null && vodInfo.seriesMap != null && vodInfo.seriesMap.containsKey(vodInfo.playFlag) &&
+                playFragment != null && playFragment.getPlayer() != null) {
+                try {
+                    VodInfo.VodSeries vod = vodInfo.seriesMap.get(vodInfo.playFlag).get(vodInfo.playIndex);
+                    PlayService.start(playFragment.getPlayer(), vodInfo.name + "&&" + vod.name);
+                    registerActionReceiver(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             if (ServiceUtils.isServiceRunning(PlayService.class)) {
                 PlayService.stop();
@@ -1138,20 +1230,22 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
     }
 
     private void toggleScreenShotListen(boolean open) {
-        if (open){
-            if (screenShotListenManager == null){
+        if (open) {
+            if (screenShotListenManager == null) {
                 screenShotListenManager = ScreenShotListenManager.newInstance(this);
             }
             screenShotListenManager.setListener(imagePath -> {
-
-                if (playFragment.getPlayer().isInPlaybackState())return;
+                // 避免在播放状态下弹出对话框
+                if (playFragment != null && playFragment.getPlayer() != null && playFragment.getPlayer().isInPlaybackState()) {
+                    return;
+                }
 
                 new XPopup.Builder(this)
                         .isDarkTheme(Utils.isDarkTheme())
-                        .asCenterList("",new String[]{"跳转阿狸","跳转优汐","跳转夸父","关闭"}, null, (position, text) -> {
+                        .asCenterList("", new String[]{"跳转阿狸", "跳转优汐", "跳转夸父", "关闭"}, null, (position, text) -> {
                             String pkg = "";
                             String cls = "";
-                            switch (position){
+                            switch (position) {
                                 case 0:
                                     pkg = "com.alicloud.databox";
                                     cls = "com.alicloud.databox.launcher.splash.SplashActivity";
@@ -1169,16 +1263,17 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                             }
                             try {
                                 startActivity(new Intent().setComponent(new ComponentName(pkg, cls)));
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 ToastUtils.showShort("未找到应用");
                             }
                         })
                         .show();
             });
             screenShotListenManager.startListen();
-        }else {
+        } else {
             if (screenShotListenManager != null) {
                 screenShotListenManager.stopListen();
+                screenShotListenManager = null; // 释放引用
             }
         }
     }

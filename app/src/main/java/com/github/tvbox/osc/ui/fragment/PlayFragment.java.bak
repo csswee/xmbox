@@ -18,7 +18,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.JsPromptResult;
@@ -201,6 +200,22 @@ public class PlayFragment extends BaseLazyFragment {
         EventBus.getDefault().register(this);
         // 使用静态内部类避免Handler内存泄漏
         mHandler = new PlayHandler(this);
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                switch (msg.what) {
+                    case 100:
+                        stopParse();
+                        errorWithRetry("嗅探错误", false);
+                        break;
+                    case 200:
+                        // 定期检查和恢复音频
+                        checkAndRecoverAudio();
+                        mHandler.sendEmptyMessageDelayed(200, 30000); // 每30秒检查一次
+                        break;
+                }
+                return false;
+            }
+        });
         mVideoView = findViewById(R.id.mVideoView);
         mPlayLoadTip = findViewById(R.id.play_load_tip);
         mPlayLoading = findViewById(R.id.play_loading);
@@ -533,12 +548,13 @@ public class PlayFragment extends BaseLazyFragment {
                     if (mediaPlayer instanceof EXOmPlayer) {
                         ((EXOmPlayer) mediaPlayer).selectExoTrack(value);
                     }
-                    if (mHandler != null) {
-                        mHandler.postDelayed(() -> {
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
                             mediaPlayer.seekTo(progress);
                             mediaPlayer.start();
-                        }, 800);
-                    }
+                        }
+                    }, 800);
                     dialog.dismiss();
                 } catch (Exception e) {
                     LOG.e("切换音轨出错");
@@ -600,22 +616,24 @@ public class PlayFragment extends BaseLazyFragment {
 
                     if (mediaPlayer instanceof IjkMediaPlayer) {
                         ((IjkMediaPlayer)mediaPlayer).setTrack(value.trackId);
-                        if (mHandler != null) {
-                            mHandler.postDelayed(() -> {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
                                 mediaPlayer.seekTo(progress);
                                 mediaPlayer.start();
-                            }, 800);
-                        }
+                            }
+                        }, 800);
                     }
                     if (mediaPlayer instanceof EXOmPlayer) {
                         ((EXOmPlayer)mediaPlayer).selectExoTrack(value);
-                        if (mHandler != null) {
-                            mHandler.postDelayed(() -> {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
                                 mediaPlayer.seekTo(progress);
                                 mediaPlayer.start();
                                 mController.startProgress();
-                            }, 800);
-                        }
+                            }
+                        }, 800);
                     }
                     dialog.dismiss();
                 } catch (Exception e) {
@@ -1397,10 +1415,7 @@ public class PlayFragment extends BaseLazyFragment {
     }
 
     void stopParse() {
-        // 先检查mHandler是否为null，避免空指针异常
-        if (mHandler != null) {
-            mHandler.removeMessages(100);
-        }
+        mHandler.removeMessages(100);
         stopLoadWebView(false);
         OkGo.getInstance().cancelTag("json_jx");
         if (parseThreadPool != null) {
@@ -1420,10 +1435,8 @@ public class PlayFragment extends BaseLazyFragment {
         initParseLoadFound();
         if (pb.getType() == 0) {
             setTip("正在嗅探播放地址", true, false);
-            if (mHandler != null) {
-                mHandler.removeMessages(100);
-                mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
-            }
+            mHandler.removeMessages(100);
+            mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
             if (pb.getExt() != null) {
                 // 解析ext
                 try {
@@ -1595,10 +1608,8 @@ public class PlayFragment extends BaseLazyFragment {
                                     String mixParseUrl = DefaultConfig.checkReplaceProxy(rs.optString("url", ""));
                                     stopParse();
                                     setTip("正在嗅探播放地址", true, false);
-                                    if (mHandler != null) {
-                                        mHandler.removeMessages(100);
-                                        mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
-                                    }
+                                    mHandler.removeMessages(100);
+                                    mHandler.sendEmptyMessageDelayed(100, 20 * 1000);
                                     loadWebView(mixParseUrl);
                                 }
                             });
@@ -1675,27 +1686,15 @@ public class PlayFragment extends BaseLazyFragment {
     void stopLoadWebView(boolean destroy) {
         if (mActivity == null || !isAdded()) return;
         requireActivity().runOnUiThread(() -> {
+
             if (mSysWebView != null) {
                 mSysWebView.stopLoading();
                 mSysWebView.loadUrl("about:blank");
                 if (destroy) {
-                    // 清除所有WebView相关的引用
-                    ViewParent parent = mSysWebView.getParent();
-                    if (parent instanceof ViewGroup) {
-                        ((ViewGroup) parent).removeView(mSysWebView);
-                    }
-                    mSysWebView.clearHistory();
-                    mSysWebView.clearCache(true);
-                    mSysWebView.clearFormData();
+//                        mSysWebView.clearCache(true);
                     mSysWebView.removeAllViews();
                     mSysWebView.destroy();
                     mSysWebView = null;
-
-                    // 清除WebView相关的数据结构
-                    if (loadedUrls != null) loadedUrls.clear();
-                    if (loadFoundVideoUrls != null) loadFoundVideoUrls.clear();
-                    if (loadFoundVideoUrlsHeader != null) loadFoundVideoUrlsHeader.clear();
-                    loadFoundCount.set(0);
                 }
             }
         });
@@ -1888,9 +1887,7 @@ public class PlayFragment extends BaseLazyFragment {
                     LOG.i("loadFoundVideoUrl:" + url);
                     if (loadFoundCount.incrementAndGet() == 1) {
                         url = loadFoundVideoUrls.poll();
-                        if (mHandler != null) {
-                            mHandler.removeMessages(100);
-                        }
+                        mHandler.removeMessages(100);
                         String cookie = CookieManager.getInstance().getCookie(url);
                         if (!TextUtils.isEmpty(cookie))
                             headers.put("Cookie", " " + cookie);//携带cookie

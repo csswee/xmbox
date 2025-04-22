@@ -71,7 +71,6 @@ public class TipDialog extends BaseDialog {
                 });
 
         md3TipDialog = XPopupAnimUtil.createMD3Builder(context)
-                .isDarkTheme(true) // 强制使用深色主题
                 .asCustom(md3Dialog);
 
         // 保留旧的实现，以防MD3TipDialog出现问题

@@ -349,13 +349,25 @@ public class VodController extends BaseController {
                 mControlWrapper.stopFadeOut();
             }
 
+            // 上次调用seekTo的时间
+            private long lastSeekTime = 0;
+            // 防抖时间间隔（毫秒）
+            private static final long SEEK_DEBOUNCE_TIME = 300;
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 myHandle.removeCallbacks(myRunnable);
                 myHandle.postDelayed(myRunnable, dismissTimeOperationBar);
                 long duration = mControlWrapper.getDuration();
                 long newPosition = (duration * seekBar.getProgress()) / seekBar.getMax();
-                mControlWrapper.seekTo((int) newPosition);
+
+                // 防抖处理，避免短时间内多次调用seekTo
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastSeekTime > SEEK_DEBOUNCE_TIME) {
+                    lastSeekTime = currentTime;
+                    mControlWrapper.seekTo((int) newPosition);
+                }
+
                 mIsDragging = false;
                 mControlWrapper.startProgress();
                 mControlWrapper.startFadeOut();

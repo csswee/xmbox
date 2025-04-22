@@ -105,7 +105,7 @@ public class LiveActivity extends BaseActivity {
     private List<LiveSettingGroup> liveSettingGroupList = new ArrayList<>();
 
     public static  int currentChannelGroupIndex = 0;
-    private Handler mHandler = new Handler();
+    private Handler mHandler = new Handler(Looper.getMainLooper());
 
     private List<LiveChannelGroup> liveChannelGroupList = new ArrayList<>();
     private int currentLiveChannelIndex = -1;
@@ -358,9 +358,8 @@ public class LiveActivity extends BaseActivity {
         mHandler.postDelayed(mHideChannelInfoRun, 3000);
     }
 
-    private Runnable mHideChannelInfoRun = new Runnable() {
-        @Override
-        public void run() {
+    private final Runnable mHideChannelInfoRun = () -> {
+        if (tvChannelInfo != null) {
             tvChannelInfo.setVisibility(View.INVISIBLE);
         }
     };
@@ -438,9 +437,11 @@ public class LiveActivity extends BaseActivity {
         }
     }
 
-    private Runnable mFocusAndShowSettingGroup = new Runnable() {
+    private final Runnable mFocusAndShowSettingGroup = new Runnable() {
         @Override
         public void run() {
+            if (mSettingGroupView == null || mSettingItemView == null || tvRightSettingLayout == null) return;
+
             if (mSettingGroupView.isScrolling() || mSettingItemView.isScrolling() || mSettingGroupView.isComputingLayout() || mSettingItemView.isComputingLayout()) {
                 mHandler.postDelayed(this, 100);
             } else {
@@ -457,7 +458,9 @@ public class LiveActivity extends BaseActivity {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             super.onAnimationEnd(animation);
-                            mHandler.postDelayed(mHideSettingLayoutRun, 5000);
+                            if (mHandler != null && mHideSettingLayoutRun != null) {
+                                mHandler.postDelayed(mHideSettingLayoutRun, 5000);
+                            }
                         }
                     });
                     animator.start();
@@ -466,9 +469,11 @@ public class LiveActivity extends BaseActivity {
         }
     };
 
-    private Runnable mHideSettingLayoutRun = new Runnable() {
+    private final Runnable mHideSettingLayoutRun = new Runnable() {
         @Override
         public void run() {
+            if (tvRightSettingLayout == null) return;
+
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) tvRightSettingLayout.getLayoutParams();
             if (tvRightSettingLayout.getVisibility() == View.VISIBLE) {
                 ViewObj viewObj = new ViewObj(tvRightSettingLayout, params);
@@ -478,8 +483,12 @@ public class LiveActivity extends BaseActivity {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        tvRightSettingLayout.setVisibility(View.INVISIBLE);
-                        liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                        if (tvRightSettingLayout != null) {
+                            tvRightSettingLayout.setVisibility(View.INVISIBLE);
+                        }
+                        if (liveSettingGroupAdapter != null) {
+                            liveSettingGroupAdapter.setSelectedGroupIndex(-1);
+                        }
                     }
                 });
                 animator.start();
@@ -575,17 +584,16 @@ public class LiveActivity extends BaseActivity {
         return playerMenuView;
     }
 
-    private Runnable mConnectTimeoutChangeSourceRun = new Runnable() {
-        @Override
-        public void run() {
-            currentLiveChangeSourceTimes++;
-            if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
-                currentLiveChangeSourceTimes = 0;
-                Integer[] groupChannelIndex = getNextChannel(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false) ? -1 : 1);
-                playChannel(groupChannelIndex[0], groupChannelIndex[1], false);
-            } else {
-                playNextSource();
-            }
+    private final Runnable mConnectTimeoutChangeSourceRun = () -> {
+        if (currentLiveChannelItem == null) return;
+
+        currentLiveChangeSourceTimes++;
+        if (currentLiveChannelItem.getSourceNum() == currentLiveChangeSourceTimes) {
+            currentLiveChangeSourceTimes = 0;
+            Integer[] groupChannelIndex = getNextChannel(Hawk.get(HawkConfig.LIVE_CHANNEL_REVERSE, false) ? -1 : 1);
+            playChannel(groupChannelIndex[0], groupChannelIndex[1], false);
+        } else {
+            playNextSource();
         }
     };
 

@@ -9,10 +9,9 @@ import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.github.tvbox.osc.R;
 import com.github.tvbox.osc.bean.Movie;
-import com.github.tvbox.osc.picasso.RoundTransformation;
 import com.github.tvbox.osc.util.DefaultConfig;
+import com.github.tvbox.osc.util.GlideHelper;
 import com.github.tvbox.osc.util.MD5;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -49,14 +48,10 @@ public class GridAdapter extends BaseQuickAdapter<Movie.Video, BaseViewHolder> {
         }
         helper.setText(R.id.tvName, item.name);
         ImageView ivThumb = helper.getView(R.id.ivThumb);
-        //由于部分电视机使用glide报错
+        // 使用Glide加载图片
         if (!TextUtils.isEmpty(item.pic)) {
-            item.pic=item.pic.trim();
-            Picasso.get()
-                    .load(DefaultConfig.checkReplaceProxy(item.pic))
-                    .placeholder(R.drawable.img_loading_placeholder)
-                    .error(R.drawable.img_loading_placeholder)
-                    .into(ivThumb);
+            item.pic = item.pic.trim();
+            GlideHelper.loadImage(ivThumb, DefaultConfig.checkReplaceProxy(item.pic), 300, 400);
         } else {
             ivThumb.setImageResource(R.drawable.img_loading_placeholder);
         }

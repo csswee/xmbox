@@ -5,11 +5,8 @@ import static okhttp3.ConnectionSpec.COMPATIBLE_TLS;
 import static okhttp3.ConnectionSpec.MODERN_TLS;
 import static okhttp3.ConnectionSpec.RESTRICTED_TLS;
 
-import android.graphics.Bitmap;
-
 import com.github.catvod.net.SSLCompat;
 import com.github.tvbox.osc.base.App;
-import com.github.tvbox.osc.picasso.MyOkhttpDownLoader;
 import com.github.tvbox.osc.util.urlhttp.BrotliInterceptor;
 import com.github.tvbox.osc.util.LOG;
 import com.lzy.okgo.OkGo;
@@ -17,7 +14,6 @@ import com.lzy.okgo.https.HttpsUtils;
 import com.lzy.okgo.interceptor.HttpLoggingInterceptor;
 import com.lzy.okgo.model.HttpHeaders;
 import com.orhanobut.hawk.Hawk;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -166,32 +162,12 @@ public class OkGoHelper {
         noRedirectClient = builder.build();
 
         initExoOkHttpClient();
-        initPicasso(okHttpClient);
+        // 初始化Glide在GlideHelper中完成，不需要在这里调用
     }
 
-    static void initPicasso(OkHttpClient client) {
-        client.dispatcher().setMaxRequestsPerHost(32);
-        MyOkhttpDownLoader downloader = new MyOkhttpDownLoader(client);
-        try {
-            // 检查是否已经存在Picasso单例实例
-            Picasso.get().shutdown();
-        } catch (Exception e) {
-            // 如果Picasso单例不存在，会抛出异常，忽略它
-        }
-        try {
-            Picasso picasso = new Picasso.Builder(App.getInstance())
-                    .downloader(downloader)
-                    .executor(HeavyTaskUtil.getBigTaskExecutorService())
-                    .defaultBitmapConfig(Bitmap.Config.RGB_565)
-                    .build();
-            Picasso.setSingletonInstance(picasso);
-        } catch (IllegalStateException e) {
-            // 如果单例已存在，使用现有的Picasso实例
-            LOG.e("Picasso singleton already exists, using existing instance");
-        }
-    }
+    // Picasso初始化已移除，改为使用GlideHelper
 
-    private static synchronized void setOkHttpSsl(OkHttpClient.Builder builder) {
+    public static synchronized void setOkHttpSsl(OkHttpClient.Builder builder) {
         try {
 
             final SSLSocketFactory sslSocketFactory = new SSLCompat();

@@ -29,6 +29,8 @@ import com.github.tvbox.osc.ui.dialog.GridFilterDialog;
 import com.github.tvbox.osc.ui.tv.widget.LoadMoreView;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.RecyclerViewOptimizer;
+import com.github.tvbox.osc.util.ThreadPoolManager;
 import com.github.tvbox.osc.viewmodel.SourceViewModel;
 import com.orhanobut.hawk.Hawk;
 import com.owen.tvrecyclerview.widget.TvRecyclerView;
@@ -178,7 +180,12 @@ public class GridFragment extends BaseLazyFragment {
     private void initView() {
         this.createView();
         mGridView.setAdapter(gridAdapter);
-        mGridView.setLayoutManager(new V7GridLayoutManager(this.mContext, 3));
+        V7GridLayoutManager layoutManager = new V7GridLayoutManager(this.mContext, 3);
+        // 设置预取数量，提高滚动性能
+        layoutManager.setInitialPrefetchItemCount(6);
+        mGridView.setLayoutManager(layoutManager);
+        // 使用RecyclerViewOptimizer优化RecyclerView性能
+        RecyclerViewOptimizer.optimize(mGridView);
 
         gridAdapter.setOnLoadMoreListener(new BaseQuickAdapter.RequestLoadMoreListener() {
             @Override
@@ -243,35 +250,46 @@ public class GridFragment extends BaseLazyFragment {
         sourceViewModel.listResult.observe(this, new Observer<AbsXml>() {
             @Override
             public void onChanged(AbsXml absXml) {
-//                if(mGridView != null) mGridView.requestFocus();
-                if (absXml != null && absXml.movie != null && absXml.movie.videoList != null && absXml.movie.videoList.size() > 0) {
-                    if (page == 1) {
-                        showSuccess();
-                        isLoad = true;
-                        gridAdapter.setNewData(absXml.movie.videoList);
-                    } else {
-                        gridAdapter.addData(absXml.movie.videoList);
-                    }
-                    page++;
-                    maxPage = absXml.movie.pagecount;
+                // 在后台线程处理数据
+                ThreadPoolManager.executeCompute(() -> {
+                    final boolean hasData = absXml != null && absXml.movie != null &&
+                                           absXml.movie.videoList != null &&
+                                           absXml.movie.videoList.size() > 0;
 
-                    if (page > maxPage) {
-                        gridAdapter.loadMoreEnd();
-                        gridAdapter.setEnableLoadMore(false);
-                        if(page>2)Toast.makeText(getContext(), "没有更多了", Toast.LENGTH_SHORT).show();
-                    } else {
-                        gridAdapter.loadMoreComplete();
-                        gridAdapter.setEnableLoadMore(true);
-                    }
-                } else {
-                    if(page == 1){
-                        showEmpty();
-                    }else{
-                        Toast.makeText(getContext(), "没有更多了", Toast.LENGTH_SHORT).show();
-                        gridAdapter.loadMoreEnd();
-                    }
-                    gridAdapter.setEnableLoadMore(false);
-                }
+                    // 在主线程更新UI
+                    ThreadPoolManager.executeMain(() -> {
+                        if (hasData) {
+                            if (page == 1) {
+                                showSuccess();
+                                isLoad = true;
+                                gridAdapter.setNewData(absXml.movie.videoList);
+                            } else {
+                                gridAdapter.addData(absXml.movie.videoList);
+                            }
+                            page++;
+                            maxPage = absXml.movie.pagecount;
+
+                            if (page > maxPage) {
+                                gridAdapter.loadMoreEnd();
+                                gridAdapter.setEnableLoadMore(false);
+                                if(page > 2 && isAdded()) {
+                                    Toast.makeText(getContext(), "没有更多了", Toast.LENGTH_SHORT).show();
+                                }
+                            } else {
+                                gridAdapter.loadMoreComplete();
+                                gridAdapter.setEnableLoadMore(true);
+                            }
+                        } else {
+                            if(page == 1){
+                                showEmpty();
+                            } else if (isAdded()) {
+                                Toast.makeText(getContext(), "没有更多了", Toast.LENGTH_SHORT).show();
+                                gridAdapter.loadMoreEnd();
+                            }
+                            gridAdapter.setEnableLoadMore(false);
+                        }
+                    });
+                });
             }
         });
     }
@@ -281,14 +299,22 @@ public class GridFragment extends BaseLazyFragment {
     }
 
     private void initData() {
-        if (ApiConfig.get().getHomeSourceBean().getApi()==null){// 系统杀死app恢复缓存的fragment后会直接getList,此时首页api都未加载完
-            showEmpty();
-            return;
-        }
-        showLoading();
-        isLoad = false;
-        scrollTop();
-        sourceViewModel.getList(sortData, page);
+        // 在后台线程检查API状态
+        ThreadPoolManager.executeIO(() -> {
+            final boolean apiReady = ApiConfig.get().getHomeSourceBean().getApi() != null;
+
+            // 切回主线程更新UI
+            ThreadPoolManager.executeMain(() -> {
+                if (!apiReady) { // 系统杀死app恢复缓存的fragment后会直接getList,此时首页api都未加载完
+                    showEmpty();
+                    return;
+                }
+                showLoading();
+                isLoad = false;
+                scrollTop();
+                sourceViewModel.getList(sortData, page);
+            });
+        });
     }
 
     public boolean isTop() {
@@ -297,7 +323,10 @@ public class GridFragment extends BaseLazyFragment {
 
     public void scrollTop() {
         isTop = true;
-        mGridView.scrollToPosition(0);
+        if (mGridView != null) {
+            // 使用smoothScrollToPosition替代scrollToPosition提供更平滑的滚动体验
+            mGridView.smoothScrollToPosition(0);
+        }
     }
 
     public void showFilter() {

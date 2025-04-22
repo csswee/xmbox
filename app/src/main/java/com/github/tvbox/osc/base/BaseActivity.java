@@ -23,6 +23,7 @@ import com.github.tvbox.osc.event.RefreshEvent;
 import com.github.tvbox.osc.ui.activity.DetailActivity;
 import com.github.tvbox.osc.util.AppManager;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.MD3LoadingUtils;
 import com.github.tvbox.osc.util.Utils;
 import com.gyf.immersionbar.ImmersionBar;
 import com.hjq.bar.OnTitleBarListener;
@@ -31,7 +32,7 @@ import com.kingja.loadsir.callback.Callback;
 import com.kingja.loadsir.core.LoadService;
 import com.kingja.loadsir.core.LoadSir;
 import com.lxj.xpopup.XPopup;
-import com.lxj.xpopup.impl.LoadingPopupView;
+import com.lxj.xpopup.core.BasePopupView;
 import com.orhanobut.hawk.Hawk;
 
 import org.greenrobot.eventbus.EventBus;
@@ -50,12 +51,15 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
 
     private ImmersionBar mImmersionBar;
     private TitleBar mTitleBar;
-    private LoadingPopupView loadingPopup;
+    private BasePopupView loadingPopup;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EventBus.getDefault().register(this);
+        // 只有当前类重写了refresh方法才注册EventBus，避免不必要的注册
+        if (shouldRegisterEventBus()) {
+            EventBus.getDefault().register(this);
+        }
 
         if (getLayoutResID()==-1){
             initVb();
@@ -69,6 +73,19 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
         init();
         if (!App.getInstance().isNormalStart){
             AppUtils.relaunchApp(true);
+        }
+    }
+
+    /**
+     * 判断是否需要注册EventBus
+     * 通过反射检查当前类是否重写了refresh方法
+     */
+    private boolean shouldRegisterEventBus() {
+        try {
+            Class<?> clazz = this.getClass();
+            return clazz.getMethod("refresh", RefreshEvent.class).getDeclaringClass() != BaseActivity.class;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -183,7 +200,22 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
+        // 只有注册了才需要取消注册
+        if (shouldRegisterEventBus() && EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
+
+        // 清理加载对话框
+        if (loadingPopup != null && loadingPopup.isShow()) {
+            loadingPopup.dismiss();
+        }
+        loadingPopup = null;
+
+        // 清理LoadService
+        if (mLoadService != null) {
+            mLoadService = null;
+        }
+
         AppManager.getInstance().finishActivity(this);
     }
 
@@ -239,10 +271,7 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomAd
      */
     public void showLoadingDialog() {
         if (loadingPopup == null) {
-            loadingPopup = new XPopup.Builder(this)
-                    .isLightNavigationBar(true)
-                    .hasShadowBg(false)
-                    .asLoading();
+            loadingPopup = MD3LoadingUtils.createLoadingPopup(this);
         }
         loadingPopup.show();
     }

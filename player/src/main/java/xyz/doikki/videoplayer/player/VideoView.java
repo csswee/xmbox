@@ -473,9 +473,29 @@ public class VideoView<P extends AbstractPlayer> extends FrameLayout
     /**
      * 调整播放进度
      */
+    private long mLastSeekTime = 0;
+    private long mLastSeekPosition = -1;
+    private static final long SEEK_DEBOUNCE_TIME = 300; // 防抖时间，单位毫秒
+
     @Override
     public void seekTo(long pos) {
         if (isInPlaybackState()) {
+            long currentTime = System.currentTimeMillis();
+
+            // 如果上次调用seekTo的时间距离现在小于防抖时间，则忽略这次调用
+            if (currentTime - mLastSeekTime < SEEK_DEBOUNCE_TIME) {
+                // 保存最新的目标位置，但不立即执行
+                mLastSeekPosition = pos;
+                return;
+            }
+
+            // 如果有保存的目标位置，使用最新的目标位置
+            if (mLastSeekPosition >= 0) {
+                pos = mLastSeekPosition;
+                mLastSeekPosition = -1;
+            }
+
+            mLastSeekTime = currentTime;
             mMediaPlayer.seekTo(pos);
         }
     }

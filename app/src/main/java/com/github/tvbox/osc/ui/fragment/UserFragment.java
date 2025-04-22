@@ -29,6 +29,8 @@ import com.github.tvbox.osc.ui.activity.SettingActivity;
 import com.github.tvbox.osc.ui.adapter.GridAdapter;
 import com.github.tvbox.osc.util.FastClickCheckUtil;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.RecyclerViewOptimizer;
+import com.github.tvbox.osc.util.ThreadPoolManager;
 import com.github.tvbox.osc.util.UA;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -74,8 +76,15 @@ public class UserFragment extends BaseLazyFragment {
     protected void onFragmentResume() {
         super.onFragmentResume();
 
-        tvHotList1.setHasFixedSize(true);
-        tvHotList1.setLayoutManager(new GridLayoutManager(this.mContext, 3));
+        if (tvHotList1 != null) {
+            tvHotList1.setHasFixedSize(true);
+            GridLayoutManager layoutManager = new GridLayoutManager(this.mContext, 3);
+            // 设置预取数量，提高滚动性能
+            layoutManager.setInitialPrefetchItemCount(6);
+            tvHotList1.setLayoutManager(layoutManager);
+            // 使用RecyclerViewOptimizer优化RecyclerView性能
+            RecyclerViewOptimizer.optimize(tvHotList1);
+        }
     }
 
     @Override
@@ -121,18 +130,25 @@ public class UserFragment extends BaseLazyFragment {
         });
 
         tvHotList1.setAdapter(homeHotVodAdapter);
+        // 使用RecyclerViewOptimizer优化RecyclerView性能
+        RecyclerViewOptimizer.optimize(tvHotList1);
         setLoadSir2(tvHotList1);
-        initHomeHotVod(homeHotVodAdapter);
+        // 在后台线程加载数据
+        ThreadPoolManager.executeIO(() -> {
+            initHomeHotVod(homeHotVodAdapter);
+        });
     }
 
     private void initHomeHotVod(GridAdapter adapter) {
         if (Hawk.get(HawkConfig.HOME_REC, 0) == 1) {
-            if (homeSourceRec != null && homeSourceRec.size() > 0) {
-                showSuccess();
-                adapter.setNewData(homeSourceRec);
-            }else {
-                showEmpty();
-            }
+            ThreadPoolManager.executeMain(() -> {
+                if (homeSourceRec != null && homeSourceRec.size() > 0) {
+                    showSuccess();
+                    adapter.setNewData(homeSourceRec);
+                } else {
+                    showEmpty();
+                }
+            });
             return;
         }
         try {
@@ -159,20 +175,22 @@ public class UserFragment extends BaseLazyFragment {
                     .execute(new AbsCallback<String>() {
                         @Override
                         public void onSuccess(Response<String> response) {
-                            String netJson = response.body();
-                            Hawk.put("home_hot_day", today);
-                            Hawk.put("home_hot", netJson);
-                            mActivity.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    ArrayList<Movie.Video> videos = loadHots(netJson);
-                                    if (videos.size()>0){
+                            // 在后台线程处理数据
+                            ThreadPoolManager.executeCompute(() -> {
+                                String netJson = response.body();
+                                Hawk.put("home_hot_day", today);
+                                Hawk.put("home_hot", netJson);
+                                ArrayList<Movie.Video> videos = loadHots(netJson);
+
+                                // 在主线程更新UI
+                                ThreadPoolManager.executeMain(() -> {
+                                    if (videos.size() > 0 && isAdded()) {
                                         showSuccess();
                                         adapter.setNewData(videos);
-                                    }else {
+                                    } else if (isAdded()) {
                                         showEmpty();
                                     }
-                                }
+                                });
                             });
                         }
 
@@ -183,9 +201,11 @@ public class UserFragment extends BaseLazyFragment {
                     });
         } catch (Throwable th) {
             th.printStackTrace();
-            if (adapter.getData().isEmpty()){
-                showEmpty();
-            }
+            ThreadPoolManager.executeMain(() -> {
+                if (isAdded() && adapter.getData().isEmpty()) {
+                    showEmpty();
+                }
+            });
         }
     }
 

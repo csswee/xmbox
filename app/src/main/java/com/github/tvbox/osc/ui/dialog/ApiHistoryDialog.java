@@ -13,6 +13,7 @@ import com.github.tvbox.osc.databinding.DialogTitleListBinding;
 import com.github.tvbox.osc.ui.adapter.TitleWithDelAdapter;
 import com.github.tvbox.osc.ui.widget.LinearSpacingItemDecoration;
 import com.github.tvbox.osc.util.HawkConfig;
+import com.github.tvbox.osc.util.Utils;
 import com.lxj.xpopup.XPopup;
 import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.interfaces.OnInputConfirmListener;
@@ -43,9 +44,25 @@ public class ApiHistoryDialog extends BottomPopupView {
     }
 
     @Override
+    protected void beforeShow() {
+        super.beforeShow();
+        // 在beforeShow中设置背景，确保在显示前应用
+        View rootView = getPopupImplView();
+        if (Utils.isDarkTheme()) {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_dark);
+        } else {
+            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
+        }
+    }
+
+    @Override
     protected void onCreate() {
         super.onCreate();
-        DialogTitleListBinding binding = DialogTitleListBinding.bind(getPopupImplView());
+        View rootView = getPopupImplView();
+
+        // 背景已在beforeShow中设置
+
+        DialogTitleListBinding binding = DialogTitleListBinding.bind(rootView);
         binding.title.setText("历史直播源");
 
         binding.ivUseTip.setOnClickListener(view -> {

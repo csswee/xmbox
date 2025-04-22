@@ -117,13 +117,20 @@ public class GridFilterDialog extends BaseDialog {
         getWindow().getDecorView().setPadding(0, 0, 0, 0);
         getWindow().setAttributes(layoutParams);
 
-        // 强制使用深色主题
-        int nightModeFlags = getContext().getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-        if (nightModeFlags != android.content.res.Configuration.UI_MODE_NIGHT_YES) {
-            // 如果不是深色模式，强制使用深色背景
-            ShadowLayout shadowLayout = (ShadowLayout) findViewById(R.id.filterRootContainer);
-            if (shadowLayout != null) {
+        // 设置背景色 - 根据当前模式设置不同的背景色
+        ShadowLayout shadowLayout = (ShadowLayout) findViewById(R.id.filterRootContainer);
+        if (shadowLayout != null) {
+            // 判断是否为夜间模式
+            boolean isNightMode = (getContext().getResources().getConfiguration().uiMode &
+                    android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+                    android.content.res.Configuration.UI_MODE_NIGHT_YES;
+
+            if (isNightMode) {
+                // 夜间模式使用深色背景 #232626
                 shadowLayout.setLayoutBackground(getContext().getResources().getColor(R.color.color_232626));
+            } else {
+                // 白天模式使用白色背景
+                shadowLayout.setLayoutBackground(getContext().getResources().getColor(R.color.white));
             }
         }
     }

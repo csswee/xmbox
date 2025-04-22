@@ -43,20 +43,19 @@ public class SelectDialog<T> extends BaseDialog {
         getWindow().setAttributes(lp);
         getWindow().setWindowAnimations(R.style.MD3DialogAnimation); // 使用Material Design 3风格的动画
 
-        // 设置深色主题
+        // 设置背景透明
         getWindow().getDecorView().setBackgroundResource(android.R.color.transparent);
+
+        // 根据当前模式设置对话框背景
         int nightModeFlags = getContext().getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
-        if (nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
-            // 已经是深色模式
-        } else {
-            // 强制使用深色主题颜色
-            View rootView = findViewById(R.id.cl_root);
-            if (rootView != null) {
+        View rootView = findViewById(R.id.cl_root);
+        if (rootView != null) {
+            if (nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+                // 夜间模式使用深色背景
                 rootView.setBackgroundResource(R.drawable.bg_dialog_dark);
-            }
-            TextView titleView = findViewById(R.id.title);
-            if (titleView != null) {
-                titleView.setTextColor(getContext().getResources().getColor(R.color.color_FFFFFF));
+            } else {
+                // 白天模式使用白色背景
+                rootView.setBackgroundResource(R.drawable.bg_dialog_md3_light);
             }
         }
     }

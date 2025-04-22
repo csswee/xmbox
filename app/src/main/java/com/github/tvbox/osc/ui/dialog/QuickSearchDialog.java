@@ -60,7 +60,18 @@ public class QuickSearchDialog extends BaseDialog {
         setOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                EventBus.getDefault().unregister(this);
+                // 修复内存泄漏，正确地取消注册EventBus
+                if (EventBus.getDefault().isRegistered(QuickSearchDialog.this)) {
+                    EventBus.getDefault().unregister(QuickSearchDialog.this);
+                }
+
+                // 清理资源
+                if (searchAdapter != null) {
+                    results.clear();
+                }
+                if (searchWordAdapter != null) {
+                    searchWordAdapter.setNewData(null);
+                }
             }
         });
         mGridView = findViewById(R.id.mGridView);

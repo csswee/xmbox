@@ -2,6 +2,7 @@ package com.github.tvbox.osc.ui.activity
 
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.View
 import androidx.lifecycle.lifecycleScope
 import com.blankj.utilcode.util.ColorUtils
@@ -131,7 +132,7 @@ class VideoListActivity : BaseVbActivity<ActivityMovieFoldersBinding>() {
     }
 
     override fun refresh(event: RefreshEvent) {
-        Handler().postDelayed({ groupVideos() }, 1000)
+        Handler(Looper.getMainLooper()).postDelayed({ groupVideos() }, 1000)
     }
 
     override fun onResume() {

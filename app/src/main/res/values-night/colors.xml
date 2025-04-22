@@ -53,4 +53,13 @@
 
     <!-- 波纹效果颜色 - 夜间模式 -->
     <color name="ripple_color">#3364D8D8</color>
+
+    <!-- 详情页线路和选集未选中背景色 - 夜间模式 -->
+    <color name="item_series_bg_light">#232626</color>
+
+    <!-- 倒序和全部按钮背景色 - 夜间模式 -->
+    <color name="sort_all_button_bg_light">#232626</color>
+
+    <!-- 选中状态的文本颜色 - 夜间模式 -->
+    <color name="selected_text_color_light">#FFFFFF</color>
 </resources>

@@ -45,7 +45,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginBottom="16dp"
         android:paddingHorizontal="24dp"
-        android:gravity="center">
+        android:gravity="end">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_left"

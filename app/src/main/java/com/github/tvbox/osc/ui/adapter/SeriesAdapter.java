@@ -37,10 +37,16 @@ public class SeriesAdapter extends BaseQuickAdapter<VodInfo.VodSeries, BaseViewH
 
         // 确保所有集数名称都能正确显示
         String seriesName = item.name;
-        // 如果是纯数字，确保显示出来
         tvSeries.setText(seriesName);
-        // 设置文本颜色为白色，增强可见度
-        tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(android.R.color.white));
+
+        // 根据选中状态设置文本颜色
+        if (item.selected) {
+            // 选中状态下使用我们定义的颜色资源
+            tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(R.color.selected_text_color_light));
+        } else {
+            // 非选中状态下使用我们定义的颜色资源
+            tvSeries.setTextColor(helper.itemView.getContext().getResources().getColor(R.color.md3_on_surface_variant));
+        }
 
         if (!isGird){// 详情页横向展示时固定宽度
             ViewGroup.LayoutParams layoutParams = sl.getLayoutParams();

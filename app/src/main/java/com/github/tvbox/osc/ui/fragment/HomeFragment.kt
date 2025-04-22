@@ -2,11 +2,9 @@ package com.github.tvbox.osc.ui.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Gravity
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
@@ -15,6 +13,8 @@ import com.blankj.utilcode.util.ConvertUtils
 import com.blankj.utilcode.util.ScreenUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.github.tvbox.osc.util.MD3ToastUtils
+import com.github.tvbox.osc.util.RecyclerViewOptimizer
+import com.github.tvbox.osc.util.ThreadPoolManager
 import com.github.tvbox.osc.R
 import com.github.tvbox.osc.api.ApiConfig
 import com.github.tvbox.osc.api.ApiConfig.LoadConfigCallback
@@ -66,7 +66,6 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     private var sourceViewModel: SourceViewModel? = null
     private val fragments: MutableList<BaseLazyFragment> = ArrayList()
-    private val mHandler = Handler()
 
     /**
      * 顶部tabs分类集合,用于渲染tab页,每个tab对应fragment内的数据
@@ -158,7 +157,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
         ApiConfig.get().loadConfig(onlyConfigChanged, object : LoadConfigCallback {
 
             override fun retry() {
-                mHandler.post { initData() }
+                ThreadPoolManager.executeMain { initData() }
             }
 
             override fun success() {
@@ -166,12 +165,12 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 if (ApiConfig.get().spider.isEmpty()) {
                     jarInitOk = true
                 }
-                mHandler.postDelayed({ initData() }, 50)
+                ThreadPoolManager.executeMainDelayed({ initData() }, 50)
             }
 
             override fun error(msg: String) {
                 if (msg.equals("-1", ignoreCase = true)) {
-                    mHandler.post {
+                    ThreadPoolManager.executeMain {
                         dataInitOk = true
                         jarInitOk = true
                         initData()
@@ -191,7 +190,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                 object : LoadConfigCallback {
                     override fun success() {
                         jarInitOk = true
-                        mHandler.postDelayed({
+                        ThreadPoolManager.executeMainDelayed({
                             if (!onlyConfigChanged) {
                                 queryHistory()
                             }
@@ -202,7 +201,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     override fun retry() {}
                     override fun error(msg: String) {
                         jarInitOk = true
-                        mHandler.post {
+                        ThreadPoolManager.executeMain {
                             ToastUtils.showShort("更新订阅失败")
                             initData()
                         }
@@ -216,7 +215,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             errorTipDialog =
                 TipDialog(requireActivity(), msg, "重试", "取消", object : TipDialog.OnListener {
                     override fun left() {
-                        mHandler.post {
+                        ThreadPoolManager.executeMain {
                             initData()
                             errorTipDialog?.hide()
                         }
@@ -225,7 +224,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     override fun right() {
                         dataInitOk = true
                         jarInitOk = true
-                        mHandler.post {
+                        ThreadPoolManager.executeMain {
                             initData()
                             errorTipDialog?.hide()
                         }
@@ -234,7 +233,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                     override fun cancel() {
                         dataInitOk = true
                         jarInitOk = true
-                        mHandler.post {
+                        ThreadPoolManager.executeMain {
                             initData()
                             errorTipDialog?.hide()
                         }
@@ -263,9 +262,15 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     private fun initViewPager(absXml: AbsSortXml?) {
-        if (mSortDataList.isNotEmpty()) {
-            mBinding.tabLayout.removeAllTabs()
-            fragments.clear()
+        // 在后台线程准备数据
+        ThreadPoolManager.executeCompute {
+            if (mSortDataList.isEmpty()) {
+                ThreadPoolManager.executeMain { showEmpty() }
+                return@executeCompute
+            }
+
+            val preparedFragments = ArrayList<BaseLazyFragment>()
+
             for (data in mSortDataList) {
                 if (data.id == "my0") { //tab是主页,添加主页fragment 根据设置项显示豆瓣热门/站点推荐(每个源不一样)/历史记录
                     if (Hawk.get(
@@ -273,36 +278,44 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
                             0
                         ) == 1 && absXml != null && absXml.videoList != null && absXml.videoList.size > 0
                     ) { //站点推荐
-                        fragments.add(UserFragment.newInstance(absXml.videoList))
+                        preparedFragments.add(UserFragment.newInstance(absXml.videoList))
                     } else { //豆瓣热门/历史记录
-                        fragments.add(UserFragment.newInstance(null))
+                        preparedFragments.add(UserFragment.newInstance(null))
                     }
                 } else { //来自源的分类
-                    fragments.add(GridFragment.newInstance(data))
+                    preparedFragments.add(GridFragment.newInstance(data))
                 }
-                // 不需要手动添加Tab，TabLayoutMediator会处理
             }
-            if (Hawk.get(HawkConfig.HOME_REC, 0) == 2) { //关闭主页
-                fragments.removeAt(0)
+
+            if (Hawk.get(HawkConfig.HOME_REC, 0) == 2 && preparedFragments.size > 0) { //关闭主页
+                preparedFragments.removeAt(0)
+            }
+
+            // 在主线程更新UI
+            ThreadPoolManager.executeMain {
                 mBinding.tabLayout.removeAllTabs()
-                // 不需要手动添加Tab，TabLayoutMediator会处理
-            }
+                fragments.clear()
+                fragments.addAll(preparedFragments)
 
-            //使用ViewPager2的适配器
-            mBinding.mViewPager.adapter = object : androidx.viewpager2.adapter.FragmentStateAdapter(this) {
-                override fun getItemCount(): Int {
-                    return fragments.size
+                //使用ViewPager2的适配器
+                mBinding.mViewPager.adapter = object : androidx.viewpager2.adapter.FragmentStateAdapter(this) {
+                    override fun getItemCount(): Int {
+                        return fragments.size
+                    }
+
+                    override fun createFragment(position: Int): Fragment {
+                        return fragments[position]
+                    }
                 }
 
-                override fun createFragment(position: Int): Fragment {
-                    return fragments[position]
-                }
-            }
+                //设置ViewPager2和TabLayout的联动
+                TabLayoutMediator(mBinding.tabLayout, mBinding.mViewPager) { tab, position ->
+                    tab.text = mSortDataList[position].name
+                }.attach()
 
-            //设置ViewPager2和TabLayout的联动
-            TabLayoutMediator(mBinding.tabLayout, mBinding.mViewPager) { tab, position ->
-                tab.text = mSortDataList[position].name
-            }.attach()
+                // 减少ViewPager2的预加载数量，默认是2
+                mBinding.mViewPager.offscreenPageLimit = 1
+            }
         }
     }
 
@@ -320,7 +333,7 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
 
     override fun onPause() {
         super.onPause()
-        mHandler.removeCallbacksAndMessages(null)
+        // 不再需要移除Handler的回调
     }
 
     private fun showSiteSwitch() {
@@ -329,6 +342,8 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
             val dialog = SelectDialog<SourceBean>(requireActivity())
             val tvRecyclerView = dialog.findViewById<TvRecyclerView>(R.id.list)
             tvRecyclerView.setLayoutManager(V7GridLayoutManager(dialog.context, 2))
+            // 优化RecyclerView性能
+            RecyclerViewOptimizer.optimizeTvRecyclerView(tvRecyclerView)
             dialog.setTip("请选择首页数据源")
             dialog.setAdapter(object : SelectDialogInterface<SourceBean?> {
                 override fun click(value: SourceBean?, pos: Int) {
@@ -369,30 +384,30 @@ class HomeFragment : BaseVbFragment<FragmentHomeBinding>() {
     }
 
     private fun queryHistory() {
-        lifecycleScope.launch {
-            val vodInfoList = withContext(Dispatchers.IO) {
-                val allVodRecord = RoomDataManger.getAllVodRecord(100)
-                val vodInfoList: MutableList<VodInfo?> = ArrayList()
-                for (vodInfo in allVodRecord) {
-                    if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty()) vodInfo.note =
-                        vodInfo.playNote
-                    vodInfoList.add(vodInfo)
-                }
-                vodInfoList
+        // 使用ThreadPoolManager替代lifecycleScope
+        ThreadPoolManager.executeIO {
+            val allVodRecord = RoomDataManger.getAllVodRecord(100)
+            val vodInfoList: MutableList<VodInfo?> = ArrayList()
+            for (vodInfo in allVodRecord) {
+                if (vodInfo.playNote != null && !vodInfo.playNote.isEmpty()) vodInfo.note =
+                    vodInfo.playNote
+                vodInfoList.add(vodInfo)
             }
 
             // 查询完成后更新UI
-            if (vodInfoList.isNotEmpty() && vodInfoList[0] != null) {
-                XPopup.Builder(context)
-                    .hasShadowBg(true) // 添加阴影背景，增强视觉效果
-                    .isDestroyOnDismiss(true)
-                    .isCenterHorizontal(true)
-                    .isTouchThrough(false)
-                    .isDarkTheme(true) // 强制使用深色主题
-                    .offsetY(ScreenUtils.getAppScreenHeight() - 400)
-                    .asCustom(LastViewedDialog(requireContext(), vodInfoList[0]))
-                    .show()
-                    .delayDismiss(5000)
+            ThreadPoolManager.executeMain {
+                if (vodInfoList.isNotEmpty() && vodInfoList[0] != null && isAdded) {
+                    XPopup.Builder(context)
+                        .hasShadowBg(true) // 添加阴影背景，增强视觉效果
+                        .isDestroyOnDismiss(true)
+                        .isCenterHorizontal(true)
+                        .isTouchThrough(false)
+                        .isDarkTheme(true) // 强制使用深色主题
+                        .offsetY(ScreenUtils.getAppScreenHeight() - 400)
+                        .asCustom(LastViewedDialog(requireContext(), vodInfoList[0]))
+                        .show()
+                        .delayDismiss(5000)
+                }
             }
         }
     }

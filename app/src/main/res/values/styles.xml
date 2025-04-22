@@ -261,35 +261,58 @@
     </style>
 
     <!-- 弹窗取消按钮样式 -->
-    <style name="Widget.App.Dialog.Button.Cancel" parent="Widget.App.Button.OutlinedButton.DarkGray">
+    <style name="Widget.App.Dialog.Button.Cancel" parent="Widget.Material3.Button">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:layout_height">52dp</item>
-        <item name="android:layout_marginEnd">12dp</item>
-        <item name="android:minWidth">120dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:minWidth">140dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.0125</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="rippleColor">@android:color/transparent</item>
+        <item name="backgroundTint">?attr/colorSurfaceVariant</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:visibility">visible</item>
     </style>
 
     <!-- 弹窗确认按钮样式 -->
-    <style name="Widget.App.Dialog.Button.Confirm" parent="Widget.App.Button.Filled">
+    <style name="Widget.App.Dialog.Button.Confirm" parent="Widget.Material3.Button">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:layout_height">52dp</item>
-        <item name="android:minWidth">120dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minWidth">140dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.0125</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="cornerRadius">16dp</item>
+        <item name="rippleColor">@android:color/transparent</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:visibility">visible</item>
     </style>
 
     <!-- 详细错误信息弹窗样式 -->
-    <style name="ThemeOverlay.App.MaterialAlertDialog.ErrorDetail" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+    <style name="ThemeOverlay.App.MaterialAlertDialog.ErrorDetail" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="buttonBarPositiveButtonStyle">@style/Widget.App.Button.Dialog.ErrorDetail</item>
         <item name="buttonBarNeutralButtonStyle">@style/Widget.App.Button.Dialog.ErrorDetail</item>
     </style>
 
-    <!-- 详细错误信息弹窗按钮样式 -->
-    <style name="Widget.App.Button.Dialog.ErrorDetail" parent="Widget.Material3.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/color_FFFFFF</item>
+    <!-- 详细错误信息弹窗按钮样式 - 白天模式下使用深色文本 -->
+    <style name="Widget.App.Button.Dialog.ErrorDetail" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/md3_on_background</item>
+        <item name="rippleColor">@android:color/transparent</item>
     </style>
 
     <!-- 播放控制按钮样式 -->
-    <style name="Widget.App.Button.PlayControl" parent="Widget.Material3.Button.TextButton">
+    <style name="Widget.App.Button.PlayControl" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:background">@drawable/bg_button_m3</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
         <item name="android:paddingVertical">8dp</item>
@@ -300,9 +323,9 @@
     </style>
 
     <!-- 倒序和全部按钮样式 -->
-    <style name="Widget.App.Button.SortAndAll" parent="Widget.Material3.Button.OutlinedButton">
+    <style name="Widget.App.Button.SortAndAll" parent="Widget.MaterialComponents.Button.OutlinedButton">
         <item name="android:background">@drawable/bg_button_sort_all_m3</item>
-        <item name="android:textColor">#D2D4D4</item>
+        <item name="android:textColor">@color/sort_all_button_icon_light</item>
         <item name="android:textSize">24sp</item>
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center</item>
