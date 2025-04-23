@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.blankj.utilcode.util.ScreenUtils;
 import com.github.tvbox.osc.R;
+import com.github.tvbox.osc.util.Utils;
 import com.lxj.xpopup.core.BottomPopupView;
 
 /**

@@ -424,7 +424,7 @@
                         android:layout_height="wrap_content"
                         android:text="线路"
                         android:textColor="@color/text_foreground"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         android:layout_centerVertical="true"
                         />
@@ -464,7 +464,7 @@
                         android:layout_height="wrap_content"
                         android:text="选集"
                         android:textColor="@color/text_foreground"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:layout_centerVertical="true"
                         android:textStyle="bold"
                         />

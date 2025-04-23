@@ -1,7 +1,9 @@
 package com.github.tvbox.osc.ui.dialog;
 
 import android.content.Context;
+import android.view.View;
 import android.widget.TextView;
+import com.google.android.material.button.MaterialButton;
 
 import androidx.annotation.NonNull;
 
@@ -55,6 +57,12 @@ public class PlayingControlDialog extends BottomPopupView {
     }
 
     private void initListener(){
+        // 关闭按钮
+        View btnClose = getPopupImplView().findViewById(R.id.btn_close);
+        if (btnClose != null) {
+            btnClose.setOnClickListener(view -> dismiss());
+        }
+
         //倍速
         mBinding.speed0.setOnClickListener(view -> setSpeed(mBinding.speed0));
         mBinding.speed1.setOnClickListener(view -> setSpeed(mBinding.speed1));
@@ -118,30 +126,43 @@ public class PlayingControlDialog extends BottomPopupView {
      * @param view 不为空变更配置文字,如更换播放器/缩放, 为空只操作点击之间,不需改变文字,如刷新/重播
      * @param targetView
      */
-    private void changeAndUpdateText(TextView view,TextView targetView){
+    private void changeAndUpdateText(View view, TextView targetView){
         targetView.performClick();
         if (view!=null){
-            view.setText(targetView.getText());
+            if (view instanceof TextView) {
+                ((TextView) view).setText(targetView.getText());
+            } else if (view instanceof MaterialButton) {
+                ((MaterialButton) view).setText(targetView.getText());
+            }
             if (view == mBinding.player){
                 updateAboutIjkVisible();
             }
         }
     }
 
-    private void setSpeed(TextView textView){
-        mController.setSpeed(textView.getText().toString().replace("x",""));
+    private void setSpeed(View view){
+        String speedText = "";
+        if (view instanceof TextView) {
+            speedText = ((TextView) view).getText().toString().replace("x","");
+        } else if (view instanceof MaterialButton) {
+            speedText = ((MaterialButton) view).getText().toString().replace("x","");
+        }
+        mController.setSpeed(speedText);
         updateSpeedUi();
     }
 
     private void updateSpeedUi(){
         for (int i = 0; i <mBinding.containerSpeed.getChildCount(); i++) {
-            TextView tv= (TextView) mBinding.containerSpeed.getChildAt(i);
-            if (String.valueOf(mPlayer.getSpeed()).equals(tv.getText().toString().replace("x",""))){
-                tv.setSelected(true);
-                tv.setTextColor(ColorUtils.getColor(R.color.white));
-            }else {
-                tv.setSelected(false);
-                tv.setTextColor(ColorUtils.getColor(R.color.text_foreground));
+            View child = mBinding.containerSpeed.getChildAt(i);
+            String speedText = "";
+            if (child instanceof TextView) {
+                TextView tv = (TextView) child;
+                speedText = tv.getText().toString().replace("x","");
+                tv.setSelected(String.valueOf(mPlayer.getSpeed()).equals(speedText));
+            } else if (child instanceof MaterialButton) {
+                MaterialButton btn = (MaterialButton) child;
+                speedText = btn.getText().toString().replace("x","");
+                btn.setSelected(String.valueOf(mPlayer.getSpeed()).equals(speedText));
             }
         }
     }

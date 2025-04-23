@@ -28,7 +28,7 @@
             android:ellipsize="end"
             android:gravity="center"
             android:singleLine="true"
-            android:textSize="18sp"
+            android:textSize="14sp"
             tools:text="天天线路" />
 
         <View

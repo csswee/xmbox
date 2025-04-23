@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/colorSurface">
+    android:background="@drawable/bg_dialog_m3"
+    android:elevation="3dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -38,93 +39,58 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed0"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x0.5" />
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed1"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x1.0" />
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed1a"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x1.25" />
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed2"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x1.5" />
 
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed3"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x2.0" />
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x2.5" />
-                    <TextView
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/speed5"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="8dp"
-                        android:background="@drawable/bg_speed_button_selector"
-                        android:paddingVertical="8dp"
-                        android:paddingHorizontal="12dp"
-                        android:textSize="14sp"
-                        android:singleLine="true"
-                        android:gravity="center"
+                        style="@style/Widget.App.Button.Speed"
                         android:text="x3.0" />
                 </LinearLayout>
             </HorizontalScrollView>
@@ -140,13 +106,14 @@
                 android:textStyle="bold"
                 />
 
-            <TextView
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/scale"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/Widget.App.Button.PlayControl"
-                android:drawableEnd="@drawable/ic_change_20"
-                android:drawablePadding="8dp"
+                app:icon="@drawable/ic_change_20"
+                app:iconGravity="end"
+                app:iconPadding="8dp"
                 tools:text="16:9"
                 />
 
@@ -237,24 +204,26 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/player"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
-                    android:drawableEnd="@drawable/ic_change_20"
-                    android:drawablePadding="8dp"
+                    app:icon="@drawable/ic_change_20"
+                    app:iconGravity="end"
+                    app:iconPadding="8dp"
                     tools:text="EXO" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/decode"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/Widget.App.Button.PlayControl"
                     android:layout_marginEnd="8dp"
-                    android:drawableEnd="@drawable/ic_change_20"
-                    android:drawablePadding="8dp"
+                    app:icon="@drawable/ic_change_20"
+                    app:iconGravity="end"
+                    app:iconPadding="8dp"
                     tools:text="硬解" />
 
 
@@ -286,7 +255,7 @@
                     tools:visibility="visible"
                     />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/subtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -294,7 +263,7 @@
                     android:layout_marginEnd="8dp"
                     android:text="字幕" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/voice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -303,7 +272,7 @@
                     android:text="音轨" />
 
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/replay"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -311,7 +280,7 @@
                     android:layout_marginEnd="8dp"
                     android:text="重播" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/refresh"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -319,7 +288,7 @@
                     android:layout_marginEnd="8dp"
                     android:text="刷新" />
 
-                <TextView
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/download"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -333,4 +302,21 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- 底部按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_close"
+            style="@style/Widget.App.Dialog.Button.Cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="关闭" />
+    </LinearLayout>
 </LinearLayout>

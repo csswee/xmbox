@@ -23,6 +23,6 @@
         android:singleLine="true"
         android:paddingHorizontal="12dp"
         android:paddingVertical="12dp"
-        android:textSize="18sp"
+        android:textSize="14sp"
         android:textColor="?attr/colorOnSurfaceVariant"/>
 </com.lihang.ShadowLayout>

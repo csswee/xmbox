@@ -393,7 +393,7 @@ public class DetailActivity extends BaseVbActivity<ActivityDetailBinding> {
                     .isViewMode(true)//隐藏导航栏(手势条)在dialog模式下会闪一下,改为view模式,但需处理onBackPress的隐藏,下方同理
                     .hasNavigationBar(false)
                     .popupHeight(ScreenUtils.getScreenHeight())
-                    .popupWidth(ScreenUtils.getAppScreenWidth() / 3) // 设置宽度为屏幕的1/3
+                    .popupWidth(ScreenUtils.getAppScreenWidth() / 2) // 设置宽度为屏幕的1/2
                     .popupPosition(PopupPosition.Right)
                     .enableDrag(false)//禁用拖拽,内部有横向rv
                     .asCustom(new AllVodSeriesRightDialog(this));

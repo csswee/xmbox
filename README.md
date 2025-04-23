@@ -8,7 +8,7 @@ XMBOX是一款基于TVBoxOS-Mobile项目改进的安卓视频播放应用，专�
 * [XiaoRanLiu3119/TVBoxOS-Mobile](https://github.com/XiaoRanLiu3119/TVBoxOS-Mobile)
 * 最初源自[q215613905/TVBoxOS](https://github.com/q215613905/TVBoxOS)
 
-在保留原有功能的基础上，对性能和界面进行了全面优化。
+在保留原有功能的基础上（删除了一些功能），对性能和界面进行了全面优化。
 
 原项目版本: v1.1.1
 当前版本: v2.0.0
@@ -51,9 +51,6 @@ XMBOX是一款基于TVBoxOS-Mobile项目改进的安卓视频播放应用，专�
    - 移除功能按钮下方的水平线
    - 移除背景，特别是返回按钮的背景
 
-4. **剧集选择优化**
-   - 将剧集选择网格从每行8集改为每行5集
-   - 统一剧集选择和频道选择的颜色样式
 
 ## 使用说明
 
