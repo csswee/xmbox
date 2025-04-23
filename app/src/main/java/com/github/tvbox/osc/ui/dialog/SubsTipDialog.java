@@ -37,7 +37,14 @@ public class SubsTipDialog extends BottomPopupView {
         super.onCreate();
         View rootView = getPopupImplView();
 
-
+        // 根据当前模式设置对话框背景
+        if (Utils.isDarkTheme()) {
+            // 夜间模式使用深色背景
+            rootView.setBackgroundResource(R.drawable.bg_dialog_md3_dark);
+        } else {
+            // 白天模式使用默认背景
+            rootView.setBackgroundResource(R.drawable.bg_dialog_md3);
+        }
 
         // 设置知道了按钮点击事件
         rootView.findViewById(R.id.btn_cancel).setOnClickListener(view -> {
