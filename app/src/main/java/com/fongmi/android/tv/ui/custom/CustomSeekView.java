@@ -59,22 +59,22 @@ public class CustomSeekView extends FrameLayout implements TimeBar.OnScrubListen
         timeBar.addListener(this);
         refresh = this::refresh;
         
-        // 设置触摸事件监听器，实现动态尺寸调整
+        // 添加触摸事件处理，实现按住时圆球变大的效果
         timeBar.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     if (!isPressed) {
                         isPressed = true;
-                        // 按下时：滑杆4dp，圆球16dp
-                        setTimeBarSize(4, 16);
+                        // 按住时：轨道变高到4dp
+                        setTimeBarHeight(4);
                     }
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     if (isPressed) {
                         isPressed = false;
-                        // 松开时：滑杆2dp，圆球12dp
-                        setTimeBarSize(2, 12);
+                        // 松开时：轨道恢复到2dp
+                        setTimeBarHeight(2);
                     }
                     break;
             }
@@ -95,54 +95,32 @@ public class CustomSeekView extends FrameLayout implements TimeBar.OnScrubListen
     }
     
     /**
-     * 动态设置进度条高度和拖拽手柄大小
-     * @param barHeightDp 滑杆高度值（dp）
-     * @param scrubberSizeDp 拖拽手柄大小（dp）
+     * 动态调整进度条高度
+     * @param barHeightDp 轨道高度（dp）
      */
-    private void setTimeBarSize(int barHeightDp, int scrubberSizeDp) {
-        // 设置滑杆高度
+    private void setTimeBarHeight(int barHeightDp) {
         int barHeightPx = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 
                 barHeightDp, 
                 getContext().getResources().getDisplayMetrics()
         );
         
-        // 设置拖拽手柄大小
-        int scrubberSizePx = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 
-                scrubberSizeDp, 
-                getContext().getResources().getDisplayMetrics()
-        );
-        
-        // 通过反射设置DefaultTimeBar的内部属性
+        // 尝试通过反射设置DefaultTimeBar的内部barHeight字段
         try {
-            // 设置滑杆高度
             java.lang.reflect.Field barHeightField = timeBar.getClass().getDeclaredField("barHeight");
             barHeightField.setAccessible(true);
             barHeightField.setInt(timeBar, barHeightPx);
             
-            // 设置拖拽手柄大小 - 尝试多个可能的字段名
-            String[] scrubberFields = {"scrubberSize", "scrubberEnabledSize", "scrubberDisabledSize"};
-            for (String fieldName : scrubberFields) {
-                try {
-                    java.lang.reflect.Field scrubberField = timeBar.getClass().getDeclaredField(fieldName);
-                    scrubberField.setAccessible(true);
-                    scrubberField.setInt(timeBar, scrubberSizePx);
-                    break; // 成功设置后退出循环
-                } catch (NoSuchFieldException e) {
-                    // 继续尝试下一个字段名
-                }
-            }
-            
-            // 刷新视图
-            timeBar.requestLayout();
+            // 强制刷新
             timeBar.invalidate();
-        } catch (Exception e) {
-            // 如果反射失败，使用备用方案
-            e.printStackTrace();
-            // 备用方案：重新设置布局参数
-            timeBar.getLayoutParams().height = barHeightPx;
             timeBar.requestLayout();
+        } catch (Exception e) {
+            // 如果反射失败，尝试调整布局参数
+            android.util.Log.w("CustomSeekView", "Failed to set bar height via reflection: " + e.getMessage());
+            if (timeBar.getLayoutParams() != null) {
+                timeBar.getLayoutParams().height = barHeightPx;
+                timeBar.requestLayout();
+            }
         }
     }
 
@@ -224,7 +202,7 @@ public class CustomSeekView extends FrameLayout implements TimeBar.OnScrubListen
                     positionView.setText(player.stringToTime(actualPosition));
                 }
             }
-        }, 50); // 延迟50ms刷新
+        }, 100); // 增加延迟时间，确保拖拽状态完全结束
     }
 
     @Override
@@ -247,6 +225,7 @@ public class CustomSeekView extends FrameLayout implements TimeBar.OnScrubListen
     @Override
     public void onScrubStop(@NonNull TimeBar timeBar, long position, boolean canceled) {
         scrubbing = false;
+        
         if (!canceled) {
             // 立即设置进度条位置到目标位置，避免圆球跳回原始位置
             timeBar.setPosition(position);
@@ -259,5 +238,7 @@ public class CustomSeekView extends FrameLayout implements TimeBar.OnScrubListen
                 player.play();
             }
         }
+        
+        // 不干预DefaultTimeBar的圆球绘制，让它自己处理
     }
 }
