@@ -78,32 +78,41 @@ public class VodConfig {
     }
 
     public static void load(Config config, Callback callback) {
+        android.util.Log.d("VodConfig", "load called with config: " + (config != null ? config.toString() : "null"));
+        
         // 参数检查
         if (config == null || callback == null) {
+            android.util.Log.e("VodConfig", "Invalid parameters: config=" + config + ", callback=" + callback);
             if (callback != null) {
                 App.post(() -> callback.error("配置参数无效"));
             }
             return;
         }
         
+        android.util.Log.d("VodConfig", "Parameters valid, proceeding with load");
+        
         // 添加加载状态检查，防止并发加载
         VodConfig instance = get();
         synchronized (instance) {
             if (instance.isLoading) {
+                android.util.Log.d("VodConfig", "Already loading, cancelling previous load");
                 // 如果正在加载，取消之前的加载
                 try {
                     OkHttp.cancel("vod");
                 } catch (Exception e) {
+                    android.util.Log.e("VodConfig", "Error cancelling previous load", e);
                     e.printStackTrace();
                 }
             }
             instance.isLoading = true;
         }
         
+        android.util.Log.d("VodConfig", "Calling instance.clear().config(config).load(callback)");
         try {
             instance.clear().config(config).load(callback);
         } catch (Exception e) {
             instance.isLoading = false;
+            android.util.Log.e("VodConfig", "Exception during load", e);
             e.printStackTrace();
             App.post(() -> callback.error("配置加载失败: " + e.getMessage()));
         }
@@ -224,14 +233,26 @@ public class VodConfig {
             return;
         }
         String spider = Json.safeString(object, "spider");
-        BaseLoader.get().parseJar(spider, true);
+        try {
+            BaseLoader.get().parseJar(spider, true);
+        } catch (Throwable e) {
+            android.util.Log.e("VodConfig", "Failed to parse spider jar: " + spider, e);
+            e.printStackTrace();
+        }
+        
         for (JsonElement element : Json.safeListElement(object, "sites")) {
-            Site site = Site.objectFrom(element);
-            if (sites.contains(site)) continue;
-            site.setApi(UrlUtil.convert(site.getApi()));
-            site.setExt(UrlUtil.convert(site.getExt()));
-            site.setJar(parseJar(site, spider));
-            sites.add(site.trans().sync());
+            try {
+                Site site = Site.objectFrom(element);
+                if (sites.contains(site)) continue;
+                site.setApi(UrlUtil.convert(site.getApi()));
+                site.setExt(UrlUtil.convert(site.getExt()));
+                site.setJar(parseJar(site, spider));
+                sites.add(site.trans().sync());
+            } catch (Throwable e) {
+                android.util.Log.e("VodConfig", "Failed to add site: " + element, e);
+                e.printStackTrace();
+                // 继续处理下一个站点
+            }
         }
         for (Site site : sites) {
             if (site.getKey().equals(config.getHome())) {

@@ -91,7 +91,7 @@
     <string name="setting_app">应用设置</string>
     <string name="setting_network">网络设置</string>
     <string name="setting_data">数据管理</string>
-    <string name="app_version">v3.0.3</string>
+    <string name="app_version">v3.0.9</string>
     <string name="about_github">在GitHub上查看</string>
 
     <!-- Backup & Restore -->

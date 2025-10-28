@@ -89,7 +89,7 @@
     <string name="setting_app">應用設置</string>
     <string name="setting_network">網絡設置</string>
     <string name="setting_data">數據管理</string>
-    <string name="app_version">v3.0.3</string>
+    <string name="app_version">v3.0.9</string>
     <string name="about_github">在GitHub上查看</string>
 
     <!-- Backup & Restore -->

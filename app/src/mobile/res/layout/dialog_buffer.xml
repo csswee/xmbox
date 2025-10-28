@@ -16,11 +16,9 @@
         android:valueFrom="1"
         android:valueTo="10"
         app:thumbColor="@color/accent"
-        app:thumbRadius="10dp"
-        app:tickVisible="true"
-        app:tickColor="@color/black_50"
+        app:thumbRadius="9dp"
+        app:tickVisible="false"
         app:trackColorActive="@color/accent"
-        app:trackColorInactive="@color/white_20"
-        app:trackHeight="6dp" />
+        app:trackColorInactive="@color/white_30" />
 
 </LinearLayout>

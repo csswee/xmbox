@@ -23,13 +23,16 @@ import com.fongmi.android.tv.ui.base.ViewType;
 import com.fongmi.android.tv.ui.custom.SpaceItemDecoration;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Timer;
+import com.fongmi.android.tv.utils.Util;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.slider.Slider;
 
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.List;
+import java.util.Locale;
 
-public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickListener {
+public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickListener, Timer.Callback {
 
     private DialogControlBinding binding;
     private ActivityVideoBinding parent;
@@ -40,6 +43,8 @@ public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickLis
     private History history;
     private Players player;
     private boolean parse;
+    private StringBuilder builder;
+    private Formatter formatter;
 
     public static ControlDialog create() {
         return new ControlDialog();
@@ -47,6 +52,8 @@ public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickLis
 
     public ControlDialog() {
         this.scale = ResUtil.getStringArray(R.array.select_scale);
+        this.builder = new StringBuilder();
+        this.formatter = new Formatter(builder, Locale.getDefault());
     }
 
     public ControlDialog parent(ActivityVideoBinding parent) {
@@ -93,6 +100,15 @@ public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickLis
         binding.opening.setText(parent.control.action.opening.getText());
         binding.loop.setActivated(parent.control.action.loop.isActivated());
         binding.timer.setActivated(Timer.get().isRunning());
+        
+        // 设置定时器回调并更新按钮文字
+        if (Timer.get().isRunning()) {
+            Timer.get().setCallback(this);
+            updateTimerText(Timer.get().getTick());
+        } else {
+            binding.timer.setText(R.string.play_timer);
+        }
+        
         setTrackVisible();
         setScaleText();
         setPlayer();
@@ -201,6 +217,42 @@ public class ControlDialog extends BaseDialog implements ParseAdapter.OnClickLis
     public void onItemClick(Parse item) {
         listener.onParse(item);
         binding.parse.getAdapter().notifyItemRangeChanged(0, binding.parse.getAdapter().getItemCount());
+    }
+
+    /**
+     * 更新定时按钮文字为倒计时
+     */
+    private void updateTimerText(long tick) {
+        if (tick > 0) {
+            binding.timer.setText(Util.format(builder, formatter, tick));
+        } else {
+            binding.timer.setText(R.string.play_timer);
+        }
+    }
+
+    /**
+     * Timer.Callback 接口实现 - 定时器每秒回调
+     */
+    @Override
+    public void onTick(long tick) {
+        updateTimerText(tick);
+    }
+
+    /**
+     * Timer.Callback 接口实现 - 定时完成回调
+     */
+    @Override
+    public void onFinish() {
+        // 定时结束，恢复按钮文字
+        binding.timer.setText(R.string.play_timer);
+        binding.timer.setActivated(false);
+    }
+
+    @Override
+    public void dismiss() {
+        // 关闭对话框时取消定时器回调
+        Timer.get().setCallback(null);
+        super.dismiss();
     }
 
     public interface Listener {
