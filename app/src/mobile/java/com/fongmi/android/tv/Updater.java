@@ -20,6 +20,7 @@ import com.github.catvod.utils.Logger;
 import com.github.catvod.utils.Path;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -33,6 +34,7 @@ public class Updater implements Download.Callback {
     private boolean dev;
     private boolean forceCheck; // 是否为手动检查
     private String latestVersion; // 存储检测到的最新版本
+    private String releaseApkUrl; // 从 GitHub Release 获取的 APK 下载链接
 
     private File getFile() {
         return Path.root("Download", "XMBOX-update.apk");
@@ -43,6 +45,12 @@ public class Updater implements Download.Callback {
     }
 
     private String getApk() {
+        // 优先使用从 GitHub Release 获取的 APK URL
+        if (releaseApkUrl != null && !releaseApkUrl.isEmpty()) {
+            Logger.d("APK download URL from Release: " + releaseApkUrl);
+            return releaseApkUrl;
+        }
+        
         // 使用JSON中指定的具体下载路径
         try {
             String response = OkHttp.string(getJson());
@@ -112,14 +120,56 @@ public class Updater implements Download.Callback {
     private void doInBackground(Activity activity) {
         Logger.d("Updater: Starting update check...");
         try {
-            // 直接使用GitHub Releases API检测最新版本
+            // 优先使用 JSON 方式检测更新（兼容性更好）
+            String response = OkHttp.string(getJson());
+            JSONObject object = new JSONObject(response);
+            String name = object.optString("name");
+            String desc = object.optString("desc");
+            int code = object.optInt("code");
+            
+            Logger.d("Updater: JSON Remote version: " + name + ", code: " + code);
+            Logger.d("Updater: Local version: " + BuildConfig.VERSION_NAME + ", code: " + BuildConfig.VERSION_CODE);
+            
+            // 使用 JSON 中的版本信息
+            if (need(code, name)) {
+                Logger.d("Updater: Update needed (from JSON), showing dialog");
+                this.latestVersion = name; // 保存最新版本号
+                
+                // 从 JSON 获取下载链接
+                JSONObject downloads = object.optJSONObject("downloads");
+                if (downloads != null) {
+                    String abi = BuildConfig.FLAVOR_abi;
+                    String downloadPath = downloads.optString(abi);
+                    if (!downloadPath.isEmpty()) {
+                        String baseUrl = Github.useCnMirror() ? 
+                            "https://gitee.com/ochenoktochen/XMBOX-Release/raw/main" :
+                            "https://raw.githubusercontent.com/Tosencen/XMBOX-Release/main";
+                        this.releaseApkUrl = baseUrl + "/apk/" + (dev ? "dev" : "release") + "/" + downloadPath;
+                        Logger.d("Updater: APK URL from JSON: " + this.releaseApkUrl);
+                    }
+                }
+                
+                App.post(() -> show(activity, name, desc));
+            } else {
+                Logger.d("Updater: No update needed (from JSON)");
+                if (forceCheck) {
+                    App.post(() -> Notify.show("已是最新版本 " + name));
+                }
+            }
+        } catch (Exception e) {
+            Logger.e("Updater: JSON check failed, trying GitHub API: " + e.getMessage());
+            // JSON 检测失败，尝试使用 GitHub Releases API
+            checkViaGitHubAPI(activity);
+        }
+    }
+    
+    private void checkViaGitHubAPI(Activity activity) {
+        try {
             String releasesUrl = "https://api.github.com/repos/Tosencen/XMBOX/releases/latest";
-            Logger.d("Updater: GitHub Releases API URL: " + releasesUrl);
+            Logger.d("Updater: Trying GitHub Releases API: " + releasesUrl);
             
             String response = OkHttp.string(releasesUrl);
-            Logger.d("Updater: API response length: " + response.length());
             
-            // 检查响应是否包含错误信息
             if (response.contains("rate limit exceeded")) {
                 Logger.e("Updater: Rate limit exceeded");
                 if (forceCheck) {
@@ -131,7 +181,7 @@ public class Updater implements Download.Callback {
             if (response.contains("Not Found") || response.contains("404")) {
                 Logger.e("Updater: Release not found");
                 if (forceCheck) {
-                    App.post(() -> Notify.show("检查更新失败：更新服务暂时不可用"));
+                    App.post(() -> Notify.show("检查更新失败：无法连接到更新服务器"));
                 }
                 return;
             }
@@ -139,29 +189,33 @@ public class Updater implements Download.Callback {
             JSONObject release = new JSONObject(response);
             String tagName = release.optString("tag_name");
             String body = release.optString("body");
-            
-            // 提取版本号（去掉v前缀）
             String version = tagName.startsWith("v") ? tagName.substring(1) : tagName;
             
-            Logger.d("Updater: Remote version: " + version);
-            Logger.d("Updater: Local version: " + BuildConfig.VERSION_NAME);
+            Logger.d("Updater: GitHub API Remote version: " + version);
             
-            // 比较版本号
-            if (needUpdate(version)) {
-                Logger.d("Updater: Update needed, showing dialog");
-                this.latestVersion = version; // 保存最新版本号
-                App.post(() -> show(activity, version, body));
-            } else {
-                Logger.d("Updater: No update needed");
-                if (forceCheck) {
-                    App.post(() -> Notify.show("已是最新版本 " + version));
+            // 从 assets 中查找 APK
+            JSONArray assets = release.optJSONArray("assets");
+            if (assets != null) {
+                String targetApkName = BuildConfig.FLAVOR_mode + "-" + BuildConfig.FLAVOR_abi + "-v" + version + ".apk";
+                for (int i = 0; i < assets.length(); i++) {
+                    JSONObject asset = assets.getJSONObject(i);
+                    if (targetApkName.equals(asset.optString("name"))) {
+                        this.releaseApkUrl = asset.optString("browser_download_url");
+                        break;
+                    }
                 }
             }
+            
+            if (needUpdate(version)) {
+                this.latestVersion = version;
+                App.post(() -> show(activity, version, body));
+            } else if (forceCheck) {
+                App.post(() -> Notify.show("已是最新版本 " + version));
+            }
         } catch (Exception e) {
-            Logger.e("Updater: Exception during update check: " + e.getMessage());
-            e.printStackTrace();
+            Logger.e("Updater: GitHub API check failed: " + e.getMessage());
             if (forceCheck) {
-                App.post(() -> Notify.show("检查更新失败：网络连接异常"));
+                App.post(() -> Notify.show("检查更新失败：无法连接到更新服务器"));
             }
         }
     }
