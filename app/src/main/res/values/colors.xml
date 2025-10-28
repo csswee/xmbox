@@ -27,5 +27,8 @@
     <color name="white_90">#E6FFFFFF</color>
     <color name="text_toast">#FFEB3B</color>
     <color name="yellow_500">#FFEB3B</color>
+    
+    <!-- Launcher icon background (Light mode) -->
+    <color name="launcher_background">#FFFFFF</color>
 
 </resources>

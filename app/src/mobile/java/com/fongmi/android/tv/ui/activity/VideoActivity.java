@@ -162,8 +162,10 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private Handler mHandler;
     private Runnable mTimeUpdateRunnable;
     private BroadcastReceiver mBatteryReceiver;
+    private BroadcastReceiver mScreenReceiver;
     private int mBatteryLevel = -1;
     private boolean mIsCharging = false;
+    private boolean mPausedByScreen = false;
 
     public static void push(FragmentActivity activity, String text) {
         if (FileChooser.isValid(activity, Uri.parse(text))) file(activity, FileChooser.getPathFromUri(activity, Uri.parse(text)));
@@ -341,6 +343,31 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
             }
         };
 
+        // 屏幕开关监听 - 仅用于画中画模式下控制播放
+        mScreenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null) return;
+                
+                // 只在画中画模式下处理屏幕开关
+                if (isInPictureInPictureMode()) {
+                    if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                        // 画中画模式下关屏，暂停播放
+                        if (mPlayers.isPlaying()) {
+                            onPaused();
+                            mPausedByScreen = true;
+                        }
+                    } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                        // 画中画模式下开屏，恢复播放
+                        if (mPausedByScreen) {
+                            onPlay();
+                            mPausedByScreen = false;
+                        }
+                    }
+                }
+            }
+        };
+
         mTimeUpdateRunnable = new Runnable() {
             @Override
             public void run() {
@@ -391,6 +418,13 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     private void startTimeBatteryUpdates() {
         registerReceiver(mBatteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        
+        // 注册屏幕开关监听
+        IntentFilter screenFilter = new IntentFilter();
+        screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(mScreenReceiver, screenFilter);
+        
         updateTimeBattery();
         mHandler.post(mTimeUpdateRunnable);
     }
@@ -402,6 +436,14 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
             }
         } catch (Exception e) {
         }
+        
+        try {
+            if (mScreenReceiver != null) {
+                unregisterReceiver(mScreenReceiver);
+            }
+        } catch (Exception e) {
+        }
+        
         mHandler.removeCallbacks(mTimeUpdateRunnable);
     }
 
@@ -1728,6 +1770,8 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
             hideDanmaku();
             hideSheet();
         } else {
+            // 退出画中画模式时，重置屏幕暂停标志
+            mPausedByScreen = false;
             showDanmaku();
             if (isStop()) finish();
         }

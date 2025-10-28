@@ -1,8 +1,10 @@
 package com.fongmi.android.tv.ui.activity;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -98,6 +100,8 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     private String tag;
     private int count;
     private PiP mPiP;
+    private BroadcastReceiver mScreenReceiver;
+    private boolean mPausedByScreen = false;
 
     public static void start(Context context) {
         if (!LiveConfig.isEmpty()) context.startActivity(new Intent(context, LiveActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("empty", false));
@@ -148,11 +152,39 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
         mR2 = this::setTraffic;
         mR3 = this::hideInfo;
         mPiP = new PiP();
+        initScreenReceiver();
         Server.get().start();
         setRecyclerView();
         setVideoView();
         setViewModel();
         checkLive();
+    }
+
+    private void initScreenReceiver() {
+        // 屏幕开关监听 - 仅用于画中画模式下控制播放
+        mScreenReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent == null || intent.getAction() == null) return;
+                
+                // 只在画中画模式下处理屏幕开关
+                if (isInPictureInPictureMode()) {
+                    if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
+                        // 画中画模式下关屏，暂停播放
+                        if (mPlayers.isPlaying()) {
+                            onPaused();
+                            mPausedByScreen = true;
+                        }
+                    } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
+                        // 画中画模式下开屏，恢复播放
+                        if (mPausedByScreen) {
+                            onPlay();
+                            mPausedByScreen = false;
+                        }
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -1048,6 +1080,8 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
             hideInfo();
             hideUI();
         } else {
+            // 退出画中画模式时，重置屏幕暂停标志
+            mPausedByScreen = false;
             hideInfo();
             if (isStop()) finish();
         }
@@ -1075,6 +1109,13 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     @Override
     protected void onResume() {
         super.onResume();
+        // 注册屏幕开关监听
+        if (mScreenReceiver != null) {
+            IntentFilter screenFilter = new IntentFilter();
+            screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+            screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+            registerReceiver(mScreenReceiver, screenFilter);
+        }
         if (isRedirect()) onPlay();
         setRedirect(false);
     }
@@ -1082,6 +1123,14 @@ public class LiveActivity extends BaseActivity implements CustomKeyDownLive.List
     @Override
     protected void onPause() {
         super.onPause();
+        // 注销屏幕开关监听
+        try {
+            if (mScreenReceiver != null) {
+                unregisterReceiver(mScreenReceiver);
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
         if (isRedirect()) onPaused();
     }
 

@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Constant;
 import com.fongmi.android.tv.Setting;
+import com.fongmi.android.tv.api.AdBlocker;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.impl.ParseCallback;
@@ -177,8 +178,13 @@ public class CustomWebView extends WebView implements DialogInterface.OnDismissL
     }
 
     private boolean isAd(String host) {
+        // 1. 首先检查内置广告域名库（包含常见的澳门新葡京等赌博广告）
+        if (AdBlocker.shouldBlock(host)) return true;
+        
+        // 2. 然后检查用户自定义的广告域名
         for (String ad : VodConfig.get().getAds()) if (Util.containOrMatch(host, ad)) return true;
         for (String ad : LiveConfig.get().getAds()) if (Util.containOrMatch(host, ad)) return true;
+        
         return false;
     }
 

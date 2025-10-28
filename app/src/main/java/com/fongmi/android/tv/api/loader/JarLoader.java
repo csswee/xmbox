@@ -46,10 +46,15 @@ public class JarLoader {
     }
 
     private void load(String key, File file) {
-        if (!file.setReadOnly()) return;
-        loaders.put(key, dex(file));
-        invokeInit(key);
-        putProxy(key);
+        try {
+            if (!file.setReadOnly()) return;
+            loaders.put(key, dex(file));
+            invokeInit(key);
+            putProxy(key);
+        } catch (Throwable e) {
+            android.util.Log.e("JarLoader", "Failed to load jar for key: " + key, e);
+            e.printStackTrace();
+        }
     }
 
     private DexClassLoader dex(File file) {
@@ -85,19 +90,24 @@ public class JarLoader {
     }
 
     public synchronized void parseJar(String key, String jar) {
-        if (loaders.containsKey(key)) return;
-        String[] texts = jar.split(";md5;");
-        String md5 = texts.length > 1 ? texts[1].trim() : "";
-        if (md5.startsWith("http")) md5 = OkHttp.string(md5).trim();
-        jar = texts[0];
-        if (!md5.isEmpty() && Util.equals(jar, md5)) {
-            load(key, Path.jar(jar));
-        } else if (jar.startsWith("http")) {
-            load(key, download(jar));
-        } else if (jar.startsWith("file")) {
-            load(key, Path.local(jar));
-        } else if (jar.startsWith("assets")) {
-            parseJar(key, UrlUtil.convert(jar));
+        try {
+            if (loaders.containsKey(key)) return;
+            String[] texts = jar.split(";md5;");
+            String md5 = texts.length > 1 ? texts[1].trim() : "";
+            if (md5.startsWith("http")) md5 = OkHttp.string(md5).trim();
+            jar = texts[0];
+            if (!md5.isEmpty() && Util.equals(jar, md5)) {
+                load(key, Path.jar(jar));
+            } else if (jar.startsWith("http")) {
+                load(key, download(jar));
+            } else if (jar.startsWith("file")) {
+                load(key, Path.local(jar));
+            } else if (jar.startsWith("assets")) {
+                parseJar(key, UrlUtil.convert(jar));
+            }
+        } catch (Throwable e) {
+            android.util.Log.e("JarLoader", "Failed to parse jar for key: " + key + ", jar: " + jar, e);
+            e.printStackTrace();
         }
     }
 

@@ -14,11 +14,9 @@
         android:valueFrom="1"
         android:valueTo="10"
         app:thumbColor="@color/primary"
-        app:thumbRadius="10dp"
-        app:tickVisible="true"
-        app:tickColor="@color/black_50"
+        app:thumbRadius="9dp"
+        app:tickVisible="false"
         app:trackColorActive="@color/primary"
-        app:trackColorInactive="@color/white_20"
-        app:trackHeight="4dp" />
+        app:trackColorInactive="@color/white_30" />
 
 </FrameLayout>

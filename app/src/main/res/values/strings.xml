@@ -92,7 +92,7 @@
     <string name="setting_choose">Choose</string>
     <string name="setting_off">Off</string>
     <string name="setting_on">On</string>
-    <string name="app_version">v3.0.6</string>
+    <string name="app_version">v3.0.9</string>
     <string name="about_github">View on GitHub</string>
 
     <!-- Backup & Restore -->
@@ -152,7 +152,7 @@
     <string name="error_device_limit">Device authorization limit reached</string>
     <string name="error_live_empty">This subscription has no live content</string>
     <string name="error_no_live">Current source has no live content</string>
-    <string name="error_empty">这里撒子内容都没得～</string>
+    <string name="error_empty">空谷待音～</string>
     <string name="error_keep_empty">老表～没得收藏哈</string>
     <string name="error_search_empty">搜索无结果，换个关键词试试</string>
     <string name="error_detail">No play data</string>
@@ -238,8 +238,8 @@
     <string name="target_size">Target size</string>
     <string name="scan_result">Scan result</string>
     
-    <string name="source_hint">No video sources added yet\nClick the button below to add</string>
-    <string name="add_source">Add Source</string>
+    <string name="source_hint">空谷无音，待君添源</string>
+    <string name="add_source">添加源</string>
     
     <!-- 隐私协议相关 -->
     <string name="privacy_agreement_title">XMBOX软件许可协议</string>
