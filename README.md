@@ -2,7 +2,7 @@
   </h1>
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-3.0.9-blue.svg)
+![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)
 ![Android](https://img.shields.io/badge/platform-Android-green.svg)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange.svg)
 ![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)
@@ -37,17 +37,17 @@
 
 ## 📥 下载安装
 
-### 最新版本: v3.0.9
+### 最新版本: v3.1.0
 
 | 平台 | ARM64-V8A | ARM V7A |
 |------|-----------|---------|
-| **📱 手机版** | [下载 (35.8MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.0.9/mobile-arm64_v8a-v3.0.9.apk) | [下载 (31.6MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.0.9/mobile-armeabi_v7a-v3.0.9.apk) |
-| **📺 TV版** | [下载 (35.9MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.0.9/leanback-arm64_v8a-v3.0.9.apk) | [下载 (31.7MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.0.9/leanback-armeabi_v7a-v3.0.9.apk) |
+| **📱 手机版** | [下载 (34.4MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.1.0/mobile-arm64_v8a-v3.1.0.apk) | [下载 (30.4MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.1.0/mobile-armeabi_v7a-v3.1.0.apk) |
+| **📺 TV版** | [下载 (34.5MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.1.0/leanback-arm64_v8a-v3.1.0.apk) | [下载 (30.5MB)](https://github.com/Tosencen/XMBOX-Release/raw/main/apk/release/v3.1.0/leanback-armeabi_v7a-v3.1.0.apk) |
 
 ### 📁 版本历史
+- **v3.1.0**: [查看v3.1.0版本](https://github.com/Tosencen/XMBOX-Release/tree/main/apk/release/v3.1.0) - 定时器优化和画中画修复版本
 - **v3.0.9**: [查看v3.0.9版本](https://github.com/Tosencen/XMBOX-Release/tree/main/apk/release/v3.0.9) - 新增直播开关控制和UI交互优化
 - **v3.0.8**: [查看v3.0.8版本](https://github.com/Tosencen/XMBOX-Release/tree/main/apk/release/v3.0.8) - UI交互体验全面优化
-- **v3.0.7**: [查看v3.0.7版本](https://github.com/Tosencen/XMBOX-Release/tree/main/apk/release/v3.0.7) - 全面优化稳定性和用户体验
 
 ### 📦 下载说明
 - **最新版本**: 根目录的 `mobile.json` 和 `leanback.json` 包含最新版本信息
@@ -133,6 +133,25 @@ XMBOX/
 - **数据库**: Room
 
 ## 📝 更新日志
+
+### v3.1.0 (2025-10-28)
+
+#### ✨ 新功能
+* **定时倒计时显示** - 实现定时按钮倒计时显示功能，用户可以实时看到剩余时间
+* **主题化图标适配** - 适配pixel主题化图标展示，提升视觉体验
+
+#### 🎨 UI优化
+* **TimerDialog优化** - 优化TimerDialog按钮宽度设计，界面更加协调
+* **进度条交互改进** - 优化播放进度条交互体验，操作更流畅
+* **视觉一致性提升** - 改进界面视觉一致性，整体更加统一
+
+#### 🐛 修复
+* **更新链接修复** - 修复更新跳转链接，现在可以正确跳转到具体版本页面
+
+#### 🔧 技术改进
+* **定时功能优化** - 提升定时功能用户体验
+* **内存优化** - 进一步优化内存使用
+* **稳定性增强** - 提升播放稳定性
 
 ### v3.0.9 (2025-10-24)
 
