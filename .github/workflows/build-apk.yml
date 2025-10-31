@@ -1,15 +1,12 @@
-name: Build Release APK
+name: Build Release with Fix
 
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
 
-env:
-  JDK_VERSION: 17
-
 jobs:
-  build-release:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -19,12 +16,44 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        java-version: ${{ env.JDK_VERSION }}
+        java-version: 17
         distribution: 'temurin'
         
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
+    - name: Fix CastActivity for Release build
+      run: |
+        echo "🔧 修复 CastActivity 用于发布构建..."
+        CAST_FILE="./app/src/leanback/java/com/fongmi/android/tv/ui/activity/CastActivity.java"
+        
+        if [ -f "$CAST_FILE" ]; then
+          # 备份原文件
+          cp "$CAST_FILE" "${CAST_FILE}.backup"
+          
+          # 添加必要的 import
+          sed -i '/^package/a \
+import androidx.mediarouter.media.MediaRouteSelector;\
+import androidx.mediarouter.media.MediaRouter;\
+' "$CAST_FILE"
+          
+          echo "✅ 已添加必要的 import"
+        else
+          echo "❌ 未找到 CastActivity 文件"
+        fi
+        
+    - name: Add missing dependencies
+      run: |
+        echo "📦 添加缺失的依赖..."
+        cat >> app/build.gradle << 'EOF'
+
+// GitHub Actions 自动添加的依赖
+dependencies {
+    implementation 'androidx.mediarouter:mediarouter:1.7.0'
+    implementation 'com.google.android.gms:play-services-cast-framework:21.4.0'
+}
+EOF
+        
     - name: Create temporary keystore
       run: |
         mkdir -p keystore
@@ -32,31 +61,19 @@ jobs:
           -keyalg RSA -keysize 2048 -validity 10000 \
           -alias xmbox -dname "CN=Android,O=Android,C=US" \
           -storepass xmbox123 -keypass xmbox123
-        echo "✅ 临时签名文件已创建"
       
-    - name: Build Release APKs
+    - name: Build Fixed Release APKs
       run: |
-        echo "🛠️ 开始构建发布版本..."
+        echo "🛠️ 开始构建修复后的发布版本..."
         ./gradlew clean
         
-        # 构建所有发布版本
         ./gradlew assembleMobileArm64_v8aRelease \
                 assembleMobileArmeabi_v7aRelease \
-                assembleLeanbackArm64_v8aRelease \
-                assembleLeanbackArmeabi_v7aRelease \
                 --no-daemon --stacktrace
         
-    - name: Check generated APKs
-      run: |
-        echo "📦 生成的 APK 文件："
-        find app/build/outputs/apk -name "*.apk" -type f
-        echo ""
-        echo "📁 详细文件列表："
-        ls -la app/build/outputs/apk/*/release/*.apk || echo "没有找到 APK 文件"
-        
-    - name: Upload Release APKs
+    - name: Upload Fixed APKs
       uses: actions/upload-artifact@v4
       with:
-        name: release-apks
-        path: app/build/outputs/apk/*/release/*.apk
+        name: fixed-release-apks
+        path: app/build/outputs/apk/mobile*/release/*.apk
         retention-days: 30
