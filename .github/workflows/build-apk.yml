@@ -1,12 +1,15 @@
-name: Show Compile Errors
+name: Build Release APK
 
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
 
+env:
+  JDK_VERSION: 17
+
 jobs:
-  debug:
+  build-release:
     runs-on: ubuntu-latest
     
     steps:
@@ -16,22 +19,44 @@ jobs:
     - name: Setup Java
       uses: actions/setup-java@v4
       with:
-        java-version: 17
+        java-version: ${{ env.JDK_VERSION }}
         distribution: 'temurin'
         
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Compile and show specific errors
+    - name: Create temporary keystore
       run: |
-        echo "🔧 编译并显示具体错误..."
-        # 只编译，不构建 APK
-        ./gradlew compileMobileArm64_v8aDebugSources \
-                compileMobileArmeabi_v7aDebugSources \
-                --no-daemon --stacktrace 2>&1 | grep -A 10 -B 5 "error:" || echo "没有找到错误信息"
-        
-    - name: Try to build with full output
+        mkdir -p keystore
+        keytool -genkey -v -keystore keystore/release.jks \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -alias xmbox -dname "CN=Android,O=Android,C=US" \
+          -storepass xmbox123 -keypass xmbox123
+        echo "✅ 临时签名文件已创建"
+      
+    - name: Build Release APKs
       run: |
-        echo "🛠️ 完整构建输出..."
+        echo "🛠️ 开始构建发布版本..."
         ./gradlew clean
-        ./gradlew assembleMobileArm64_v8aDebug --no-daemon 2>&1 | head -200
+        
+        # 构建所有发布版本
+        ./gradlew assembleMobileArm64_v8aRelease \
+                assembleMobileArmeabi_v7aRelease \
+                assembleLeanbackArm64_v8aRelease \
+                assembleLeanbackArmeabi_v7aRelease \
+                --no-daemon --stacktrace
+        
+    - name: Check generated APKs
+      run: |
+        echo "📦 生成的 APK 文件："
+        find app/build/outputs/apk -name "*.apk" -type f
+        echo ""
+        echo "📁 详细文件列表："
+        ls -la app/build/outputs/apk/*/release/*.apk || echo "没有找到 APK 文件"
+        
+    - name: Upload Release APKs
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-apks
+        path: app/build/outputs/apk/*/release/*.apk
+        retention-days: 30
