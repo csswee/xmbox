@@ -1,4 +1,4 @@
-name: Build XMBOX APK
+name: Build All Variants
 
 on:
   push:
@@ -8,15 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        variant: [
-          "mobileArm64_v8aRelease",
-          "mobileArmeabi_v7aRelease", 
-          "leanbackArm64_v8aRelease",
-          "leanbackArmeabi_v7aRelease"
-        ]
     
     steps:
     - name: Checkout code
@@ -28,22 +19,23 @@ jobs:
         java-version: 17
         distribution: 'temurin'
         
-    - name: Create keystore
-      run: |
-        mkdir -p keystore
-        keytool -genkey -v -keystore keystore/release.jks \
-          -keyalg RSA -keysize 2048 -validity 10000 \
-          -alias xmbox -dname "CN=XMBOX,OU=Android,O=XMBOX,C=US" \
-          -storepass xmbox123 -keypass xmbox123
-      
-    - name: Build ${{ matrix.variant }}
+    - name: Build all variants
       run: |
         chmod +x ./gradlew
-        ./gradlew assemble${{ matrix.variant }} --no-daemon --warning-mode none
-      
-    - name: Upload ${{ matrix.variant }}
+        # 使用 assemble 命令构建所有变体，包括调试版
+        ./gradlew assemble --no-daemon
+        
+    - name: List all APK files
+      run: |
+        echo "📦 所有生成的 APK 文件："
+        find app/build/outputs -name "*.apk" -type f | sort
+        echo ""
+        echo "文件详情："
+        find app/build/outputs -name "*.apk" -type f -exec ls -la {} \;
+        
+    - name: Upload All APKs
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.variant }}-apk
-        path: app/build/outputs/apk/*/${{ matrix.variant }}/*.apk
+        name: all-apk-files
+        path: app/build/outputs/**/*.apk
         retention-days: 30
