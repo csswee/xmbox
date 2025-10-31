@@ -1,4 +1,4 @@
-name: Simple Build from Docs
+name: Fix Cast Dependencies and Build
 
 on:
   push:
@@ -22,38 +22,52 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Create keystore
+    - name: Add complete Cast dependencies
+      run: |
+        echo "📦 添加完整的 Cast 相关依赖..."
+        
+        # 在 app/build.gradle 中添加所有必要的 Cast 依赖
+        cat >> app/build.gradle << 'EOF'
+
+// GitHub Actions 自动添加的 Cast 依赖
+dependencies {
+    // AndroidX MediaRouter
+    implementation 'androidx.mediarouter:mediarouter:1.7.0'
+    
+    // Google Cast 框架
+    implementation 'com.google.android.gms:play-services-cast:21.4.0'
+    implementation 'com.google.android.gms:play-services-cast-framework:21.4.0'
+    
+    // 添加缺失的类
+    implementation 'androidx.leanback:leanback:1.2.0'
+    implementation 'androidx.leanback:leanback-preference:1.2.0'
+    
+    // 添加 Play Services base
+    implementation 'com.google.android.gms:play-services-base:18.4.0'
+}
+EOF
+        
+    - name: Create temporary keystore
       run: |
         mkdir -p keystore
         keytool -genkey -v -keystore keystore/release.jks \
           -keyalg RSA -keysize 2048 -validity 10000 \
-          -alias xmbox -dname "CN=XMBOX,OU=Android,O=XMBOX,C=US" \
+          -alias xmbox -dname "CN=Android,O=Android,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build using project commands
+    - name: Build with fixed dependencies
       run: |
-        echo "🏗️ 使用项目文档中的构建命令..."
+        echo "🛠️ 使用修复的依赖构建..."
+        ./gradlew clean
         
-        # 按照项目文档构建特定版本
-        ./gradlew assembleMobileArm64_v8aRelease
-        ./gradlew assembleMobileArmeabi_v7aRelease
-        ./gradlew assembleLeanbackArm64_v8aRelease  
-        ./gradlew assembleLeanbackArmeabi_v7aRelease
-        
-    - name: List APK files
-      run: |
-        echo "📦 构建结果："
-        find app/build/outputs/apk -name "*.apk" -type f
-        echo ""
-        echo "🎯 按照项目文档，APK 应该在以下位置："
-        echo "app/build/outputs/apk/mobileArm64_v8a/release/mobile-arm64_v8a.apk"
-        echo "app/build/outputs/apk/mobileArmeabi_v7a/release/mobile-armeabi_v7a.apk"
-        echo "app/build/outputs/apk/leanbackArm64_v8a/release/leanback-arm64_v8a.apk"
-        echo "app/build/outputs/apk/leanbackArmeabi_v7a/release/leanback-armeabi_v7a.apk"
+        # 先构建手机版本
+        ./gradlew assembleMobileArm64_v8aRelease \
+                assembleMobileArmeabi_v7aRelease \
+                --no-daemon --stacktrace
         
     - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: xmbox-apks
-        path: app/build/outputs/apk/**/release/*.apk
+        name: fixed-cast-apks
+        path: app/build/outputs/apk/mobile*/release/*.apk
         retention-days: 30
