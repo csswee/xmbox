@@ -1,4 +1,4 @@
-name: Simple Build
+name: Build APK for MT2
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,23 +19,43 @@ jobs:
         java-version: 17
         distribution: 'temurin'
         
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      
+    - name: Create temporary keystore
+      run: |
+        mkdir -p keystore
+        keytool -genkey -v -keystore keystore/release.jks \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -alias xmbox -dname "CN=Android,O=Android,C=US" \
+          -storepass xmbox123 -keypass xmbox123
+      
     - name: Build APKs
       run: |
-        chmod +x ./gradlew
-        # 创建临时签名文件
-        mkdir -p keystore
-        echo "创建临时签名文件..."
-        # 构建所有变体
+        echo "开始构建 APK..."
         ./gradlew assembleMobileArm64_v8aRelease \
                 assembleMobileArmeabi_v7aRelease \
                 assembleLeanbackArm64_v8aRelease \
                 assembleLeanbackArmeabi_v7aRelease \
-                --no-daemon
-        
+                --no-daemon --stacktrace --warning-mode none
+      
+    - name: List generated APKs
+      run: |
+        echo "📦 生成的 APK 文件列表："
+        find app/build/outputs/apk -name "*.apk" -type f -exec ls -la {} \;
+        echo "APK 文件数量："
+        find app/build/outputs/apk -name "*.apk" -type f | wc -l
+      
     - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
         name: xmbox-apks
-        path: |
-          app/build/outputs/apk/*/release/*.apk
+        path: app/build/outputs/apk/**/*.apk
         retention-days: 30
+        if-no-files-found: error
+      
+    - name: Build Success
+      run: |
+        echo "🎉 构建成功！"
+        echo "📥 请到 Artifacts 区域下载 APK 文件"
+        echo "🔧 下载后使用 MT2 管理器进行签名即可安装"
