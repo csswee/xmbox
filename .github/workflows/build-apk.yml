@@ -1,4 +1,4 @@
-name: Build Basic Mobile Only
+name: Build Mobile APK Fixed
 
 on:
   push:
@@ -22,11 +22,11 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Disable only problematic Cast files
+    - name: Disable problematic Cast files
       run: |
-        echo "🔧 仅禁用有问题的 Cast 文件..."
+        echo "🔧 禁用有问题的 Cast 文件..."
         
-        # 只禁用 mobile 版本的 CastDialog（因为错误在那里）
+        # 禁用 mobile 版本的 CastDialog
         CAST_DIALOG="./app/src/mobile/java/com/fongmi/android/tv/ui/dialog/CastDialog.java"
         if [ -f "$CAST_DIALOG" ]; then
           mv "$CAST_DIALOG" "${CAST_DIALOG}.backup"
@@ -35,12 +35,12 @@ package com.fongmi.android.tv.ui.dialog;
 
 import android.app.Dialog;
 
-// CastDialog disabled for build
+// CastDialog disabled for GitHub Actions build
 public class CastDialog extends Dialog {
-    // Stub implementation
+    // Stub implementation for successful compilation
 }
 EOF
-          echo "✅ 已禁用 CastDialog（mobile）"
+          echo "✅ 已禁用 CastDialog"
         fi
         
     - name: Create temporary keystore
@@ -51,27 +51,20 @@ EOF
           -alias xmbox -dname "CN=Android,O=Android,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build mobile versions only
+    - name: Build mobile versions
       run: |
-        echo "📱 只构建手机版本..."
+        echo "📱 构建手机版本..."
         ./gradlew clean
+        ./gradlew assembleMobileArm64_v8aRelease assembleMobileArmeabi_v7aRelease --no-daemon --stacktrace
         
-        ./gradlew assembleMobileArm64_v8aRelease \
-                assembleMobileArmeabi_v7aRelease \
-                --no-daemon --stacktrace
-        
-    - name: Restore original files
+    - name: Check APK files
       run: |
-        # 恢复备份的文件
-        find ./app/src -name "*.backup" -type f | while read file; do
-          original="${file%.backup}"
-          mv "$file" "$original"
-          echo "恢复: $original"
-        done
+        echo "📦 检查生成的 APK："
+        find app/build/outputs/apk -name "*.apk" -type f || echo "没有找到 APK 文件"
         
-    - name: Upload mobile APKs
+    - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: mobile-apks-only
+        name: mobile-apks
         path: app/build/outputs/apk/mobile*/release/*.apk
         retention-days: 30
