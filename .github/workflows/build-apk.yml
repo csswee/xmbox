@@ -1,4 +1,4 @@
-name: Debug Build Process
+name: Deep Diagnose Project
 
 on:
   push:
@@ -6,57 +6,71 @@ on:
   workflow_dispatch:
 
 jobs:
-  debug:
+  diagnose:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Java
-      uses: actions/setup-java@v4
-      with:
-        java-version: 17
-        distribution: 'temurin'
-        
-    - name: Check project structure
+    - name: Analyze repository structure
       run: |
-        echo "📁 项目根目录内容："
+        echo "🔍 深度分析仓库结构..."
+        echo ""
+        echo "📊 仓库总大小："
+        du -sh . || echo "无法计算大小"
+        echo ""
+        echo "📁 根目录详细内容："
         ls -la
         echo ""
-        echo "📁 app 目录内容："
-        ls -la app/ || echo "没有 app 目录"
+        echo "📁 所有子目录："
+        find . -maxdepth 2 -type d | sort
         echo ""
-        echo "🔍 查找所有 build.gradle 文件："
-        find . -name "build.gradle" -type f
+        echo "📋 所有 Gradle 文件："
+        find . -name "*.gradle" -type f | sort
         echo ""
-        echo "🔍 查找 CastActivity 文件："
-        find . -name "*CastActivity*" -type f
+        echo "📋 所有 Gradle 属性文件："
+        find . -name "gradle.properties" -type f | sort
+        echo ""
+        echo "🐘 Gradle Wrapper 检查："
+        ls -la gradlew* 2>/dev/null || echo "没有找到 gradlew"
+        ls -la gradle/ 2>/dev/null || echo "没有 gradle 目录"
         
-    - name: Check gradle files
+    - name: Check Android project structure
       run: |
-        echo "📋 检查 app/build.gradle 内容："
-        if [ -f "app/build.gradle" ]; then
-          head -50 app/build.gradle
+        echo "🤖 Android 项目结构检查："
+        echo ""
+        echo "📱 查找 AndroidManifest.xml："
+        find . -name "AndroidManifest.xml" -type f | head -10
+        echo ""
+        echo "📦 查找 build.gradle 文件："
+        find . -name "build.gradle" -type f | head -10
+        echo ""
+        echo "🔧 查看 settings.gradle："
+        if [ -f "settings.gradle" ]; then
+          cat settings.gradle
         else
-          echo "app/build.gradle 不存在"
+          echo "没有 settings.gradle 文件"
+        fi
+        echo ""
+        echo "📝 查看项目配置："
+        if [ -f "build.gradle" ]; then
+          echo "根目录 build.gradle 内容："
+          head -30 build.gradle
         fi
         
-    - name: Try to build with detailed error info
+    - name: Check source code structure
       run: |
-        chmod +x ./gradlew
-        ./gradlew clean --no-daemon || true
-        ./gradlew tasks --no-daemon | grep assemble || true
-        
-    - name: Attempt basic build
-      run: |
-        echo "尝试构建调试版本..."
-        ./gradlew assembleDebug --no-daemon --stacktrace || echo "构建失败，继续执行"
-        
-    - name: Check build results
-      run: |
-        echo "🔍 检查构建输出："
-        find . -name "*.apk" -type f 2>/dev/null | head -20 || echo "没有找到 APK 文件"
+        echo "📚 源代码结构检查："
         echo ""
-        echo "📁 build 目录结构："
-        find app/build -type d 2>/dev/null | head -20 || echo "没有 build 目录"
+        echo "🐦 Java 文件统计："
+        find . -name "*.java" -type f | wc -l
+        echo ""
+        echo "📄 Java 文件位置："
+        find . -name "*.java" -type f | head -20
+        echo ""
+        echo "🔍 查找 CastActivity："
+        find . -name "*CastActivity*" -type f
+        echo ""
+        echo "📁 主要的包结构："
+        find . -name "*.java" -type f | sed 's/\/[^/]*$//' | sort | uniq | head -20
