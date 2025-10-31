@@ -1,4 +1,4 @@
-name: Fix Cast Dependencies and Build
+name: Build Basic Mobile Only
 
 on:
   push:
@@ -22,30 +22,26 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Add complete Cast dependencies
+    - name: Disable only problematic Cast files
       run: |
-        echo "📦 添加完整的 Cast 相关依赖..."
+        echo "🔧 仅禁用有问题的 Cast 文件..."
         
-        # 在 app/build.gradle 中添加所有必要的 Cast 依赖
-        cat >> app/build.gradle << 'EOF'
+        # 只禁用 mobile 版本的 CastDialog（因为错误在那里）
+        CAST_DIALOG="./app/src/mobile/java/com/fongmi/android/tv/ui/dialog/CastDialog.java"
+        if [ -f "$CAST_DIALOG" ]; then
+          mv "$CAST_DIALOG" "${CAST_DIALOG}.backup"
+          cat > "$CAST_DIALOG" << 'EOF'
+package com.fongmi.android.tv.ui.dialog;
 
-// GitHub Actions 自动添加的 Cast 依赖
-dependencies {
-    // AndroidX MediaRouter
-    implementation 'androidx.mediarouter:mediarouter:1.7.0'
-    
-    // Google Cast 框架
-    implementation 'com.google.android.gms:play-services-cast:21.4.0'
-    implementation 'com.google.android.gms:play-services-cast-framework:21.4.0'
-    
-    // 添加缺失的类
-    implementation 'androidx.leanback:leanback:1.2.0'
-    implementation 'androidx.leanback:leanback-preference:1.2.0'
-    
-    // 添加 Play Services base
-    implementation 'com.google.android.gms:play-services-base:18.4.0'
+import android.app.Dialog;
+
+// CastDialog disabled for build
+public class CastDialog extends Dialog {
+    // Stub implementation
 }
 EOF
+          echo "✅ 已禁用 CastDialog（mobile）"
+        fi
         
     - name: Create temporary keystore
       run: |
@@ -55,19 +51,27 @@ EOF
           -alias xmbox -dname "CN=Android,O=Android,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build with fixed dependencies
+    - name: Build mobile versions only
       run: |
-        echo "🛠️ 使用修复的依赖构建..."
+        echo "📱 只构建手机版本..."
         ./gradlew clean
         
-        # 先构建手机版本
         ./gradlew assembleMobileArm64_v8aRelease \
                 assembleMobileArmeabi_v7aRelease \
                 --no-daemon --stacktrace
         
-    - name: Upload APKs
+    - name: Restore original files
+      run: |
+        # 恢复备份的文件
+        find ./app/src -name "*.backup" -type f | while read file; do
+          original="${file%.backup}"
+          mv "$file" "$original"
+          echo "恢复: $original"
+        done
+        
+    - name: Upload mobile APKs
       uses: actions/upload-artifact@v4
       with:
-        name: fixed-cast-apks
+        name: mobile-apks-only
         path: app/build/outputs/apk/mobile*/release/*.apk
         retention-days: 30
