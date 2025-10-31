@@ -1,4 +1,4 @@
-name: Build with Detailed Errors
+name: Show Compile Errors
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     
     steps:
@@ -22,39 +22,16 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Build with full error output
+    - name: Compile and show specific errors
       run: |
-        echo "🛠️ 构建并显示完整错误信息..."
+        echo "🔧 编译并显示具体错误..."
+        # 只编译，不构建 APK
+        ./gradlew compileMobileArm64_v8aDebugSources \
+                compileMobileArmeabi_v7aDebugSources \
+                --no-daemon --stacktrace 2>&1 | grep -A 10 -B 5 "error:" || echo "没有找到错误信息"
+        
+    - name: Try to build with full output
+      run: |
+        echo "🛠️ 完整构建输出..."
         ./gradlew clean
-        # 使用 --info 和 --stacktrace 显示详细错误
-        ./gradlew assembleMobileArm64_v8aDebug \
-                assembleMobileArmeabi_v7aDebug \
-                --no-daemon --stacktrace --info 2>&1 | tee build.log || echo "构建失败，但继续执行"
-        
-    - name: Show last 100 lines of build log
-      run: |
-        echo "📋 构建日志最后100行："
-        tail -100 build.log || echo "没有构建日志"
-        
-    - name: Check for APK files anyway
-      run: |
-        echo "🔍 检查是否生成了 APK 文件："
-        find . -name "*.apk" -type f
-        APK_COUNT=$(find . -name "*.apk" -type f | wc -l)
-        echo "找到 $APK_COUNT 个 APK 文件"
-        
-    - name: Upload build log
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: build-log
-        path: build.log
-        retention-days: 30
-        
-    - name: Upload APKs if any
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: mobile-apks
-        path: app/build/outputs/apk/mobile*/debug/*.apk
-        retention-days: 30
+        ./gradlew assembleMobileArm64_v8aDebug --no-daemon 2>&1 | head -200
