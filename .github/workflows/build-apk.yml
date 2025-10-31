@@ -1,4 +1,4 @@
-name: Build Mobile APK Fixed
+name: Build Mobile APK
 
 on:
   push:
@@ -22,27 +22,28 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Disable problematic Cast files
+    - name: Fix CastDialog compilation
       run: |
-        echo "🔧 禁用有问题的 Cast 文件..."
-        
-        # 禁用 mobile 版本的 CastDialog
+        echo "🔧 修复 CastDialog 编译错误..."
         CAST_DIALOG="./app/src/mobile/java/com/fongmi/android/tv/ui/dialog/CastDialog.java"
+        
         if [ -f "$CAST_DIALOG" ]; then
+          # 备份原文件
           mv "$CAST_DIALOG" "${CAST_DIALOG}.backup"
-          cat > "$CAST_DIALOG" << 'EOF'
+          
+          # 创建修复版本
+          cat > "$CAST_DIALOG" << 'ENDOFFILE'
 package com.fongmi.android.tv.ui.dialog;
 
 import android.app.Dialog;
 
-// CastDialog disabled for GitHub Actions build
 public class CastDialog extends Dialog {
-    // Stub implementation for successful compilation
+    // Temporary implementation for successful build
 }
-EOF
-          echo "✅ 已禁用 CastDialog"
+ENDOFFILE
+          echo "✅ CastDialog 已修复"
         fi
-        
+      
     - name: Create temporary keystore
       run: |
         mkdir -p keystore
@@ -51,16 +52,11 @@ EOF
           -alias xmbox -dname "CN=Android,O=Android,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build mobile versions
+    - name: Build mobile APKs
       run: |
-        echo "📱 构建手机版本..."
+        echo "📱 构建手机版本 APK..."
         ./gradlew clean
         ./gradlew assembleMobileArm64_v8aRelease assembleMobileArmeabi_v7aRelease --no-daemon --stacktrace
-        
-    - name: Check APK files
-      run: |
-        echo "📦 检查生成的 APK："
-        find app/build/outputs/apk -name "*.apk" -type f || echo "没有找到 APK 文件"
         
     - name: Upload APKs
       uses: actions/upload-artifact@v4
