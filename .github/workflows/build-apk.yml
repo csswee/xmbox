@@ -1,4 +1,4 @@
-name: Build Mobile Only
+name: Build with Detailed Errors
 
 on:
   push:
@@ -22,31 +22,38 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Create temporary keystore
+    - name: Build with full error output
       run: |
-        mkdir -p keystore
-        keytool -genkey -v -keystore keystore/release.jks \
-          -keyalg RSA -keysize 2048 -validity 10000 \
-          -alias xmbox -dname "CN=Android,O=Android,C=US" \
-          -storepass xmbox123 -keypass xmbox123
-      
-    - name: Build mobile variants only
-      run: |
-        echo "📱 只构建手机版本（避开 TV 版的 CastActivity）..."
+        echo "🛠️ 构建并显示完整错误信息..."
         ./gradlew clean
+        # 使用 --info 和 --stacktrace 显示详细错误
         ./gradlew assembleMobileArm64_v8aDebug \
                 assembleMobileArmeabi_v7aDebug \
-                --no-daemon --stacktrace
+                --no-daemon --stacktrace --info 2>&1 | tee build.log || echo "构建失败，但继续执行"
         
-    - name: Check results
+    - name: Show last 100 lines of build log
       run: |
-        echo "📦 生成的 APK 文件："
-        find . -name "*.apk" -type f
-        echo ""
-        echo "✅ 构建完成！"
+        echo "📋 构建日志最后100行："
+        tail -100 build.log || echo "没有构建日志"
         
-    - name: Upload mobile APKs
+    - name: Check for APK files anyway
+      run: |
+        echo "🔍 检查是否生成了 APK 文件："
+        find . -name "*.apk" -type f
+        APK_COUNT=$(find . -name "*.apk" -type f | wc -l)
+        echo "找到 $APK_COUNT 个 APK 文件"
+        
+    - name: Upload build log
       uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-log
+        path: build.log
+        retention-days: 30
+        
+    - name: Upload APKs if any
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: mobile-apks
         path: app/build/outputs/apk/mobile*/debug/*.apk
