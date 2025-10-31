@@ -1,4 +1,4 @@
-name: Build Release with Fix
+name: Simple Build from Docs
 
 on:
   push:
@@ -22,58 +22,38 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Fix CastActivity for Release build
-      run: |
-        echo "🔧 修复 CastActivity 用于发布构建..."
-        CAST_FILE="./app/src/leanback/java/com/fongmi/android/tv/ui/activity/CastActivity.java"
-        
-        if [ -f "$CAST_FILE" ]; then
-          # 备份原文件
-          cp "$CAST_FILE" "${CAST_FILE}.backup"
-          
-          # 添加必要的 import
-          sed -i '/^package/a \
-import androidx.mediarouter.media.MediaRouteSelector;\
-import androidx.mediarouter.media.MediaRouter;\
-' "$CAST_FILE"
-          
-          echo "✅ 已添加必要的 import"
-        else
-          echo "❌ 未找到 CastActivity 文件"
-        fi
-        
-    - name: Add missing dependencies
-      run: |
-        echo "📦 添加缺失的依赖..."
-        cat >> app/build.gradle << 'EOF'
-
-// GitHub Actions 自动添加的依赖
-dependencies {
-    implementation 'androidx.mediarouter:mediarouter:1.7.0'
-    implementation 'com.google.android.gms:play-services-cast-framework:21.4.0'
-}
-EOF
-        
-    - name: Create temporary keystore
+    - name: Create keystore
       run: |
         mkdir -p keystore
         keytool -genkey -v -keystore keystore/release.jks \
           -keyalg RSA -keysize 2048 -validity 10000 \
-          -alias xmbox -dname "CN=Android,O=Android,C=US" \
+          -alias xmbox -dname "CN=XMBOX,OU=Android,O=XMBOX,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build Fixed Release APKs
+    - name: Build using project commands
       run: |
-        echo "🛠️ 开始构建修复后的发布版本..."
-        ./gradlew clean
+        echo "🏗️ 使用项目文档中的构建命令..."
         
-        ./gradlew assembleMobileArm64_v8aRelease \
-                assembleMobileArmeabi_v7aRelease \
-                --no-daemon --stacktrace
+        # 按照项目文档构建特定版本
+        ./gradlew assembleMobileArm64_v8aRelease
+        ./gradlew assembleMobileArmeabi_v7aRelease
+        ./gradlew assembleLeanbackArm64_v8aRelease  
+        ./gradlew assembleLeanbackArmeabi_v7aRelease
         
-    - name: Upload Fixed APKs
+    - name: List APK files
+      run: |
+        echo "📦 构建结果："
+        find app/build/outputs/apk -name "*.apk" -type f
+        echo ""
+        echo "🎯 按照项目文档，APK 应该在以下位置："
+        echo "app/build/outputs/apk/mobileArm64_v8a/release/mobile-arm64_v8a.apk"
+        echo "app/build/outputs/apk/mobileArmeabi_v7a/release/mobile-armeabi_v7a.apk"
+        echo "app/build/outputs/apk/leanbackArm64_v8a/release/leanback-arm64_v8a.apk"
+        echo "app/build/outputs/apk/leanbackArmeabi_v7a/release/leanback-armeabi_v7a.apk"
+        
+    - name: Upload APKs
       uses: actions/upload-artifact@v4
       with:
-        name: fixed-release-apks
-        path: app/build/outputs/apk/mobile*/release/*.apk
+        name: xmbox-apks
+        path: app/build/outputs/apk/**/release/*.apk
         retention-days: 30
