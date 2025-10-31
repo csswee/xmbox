@@ -1,4 +1,4 @@
-name: Build APK for MT2
+name: Build XMBOX APK
 
 on:
   push:
@@ -8,6 +8,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        variant: [
+          "mobileArm64_v8aRelease",
+          "mobileArmeabi_v7aRelease", 
+          "leanbackArm64_v8aRelease",
+          "leanbackArmeabi_v7aRelease"
+        ]
     
     steps:
     - name: Checkout code
@@ -19,43 +28,22 @@ jobs:
         java-version: 17
         distribution: 'temurin'
         
-    - name: Make gradlew executable
-      run: chmod +x ./gradlew
-      
-    - name: Create temporary keystore
+    - name: Create keystore
       run: |
         mkdir -p keystore
         keytool -genkey -v -keystore keystore/release.jks \
           -keyalg RSA -keysize 2048 -validity 10000 \
-          -alias xmbox -dname "CN=Android,O=Android,C=US" \
+          -alias xmbox -dname "CN=XMBOX,OU=Android,O=XMBOX,C=US" \
           -storepass xmbox123 -keypass xmbox123
       
-    - name: Build APKs
+    - name: Build ${{ matrix.variant }}
       run: |
-        echo "开始构建 APK..."
-        ./gradlew assembleMobileArm64_v8aRelease \
-                assembleMobileArmeabi_v7aRelease \
-                assembleLeanbackArm64_v8aRelease \
-                assembleLeanbackArmeabi_v7aRelease \
-                --no-daemon --stacktrace --warning-mode none
+        chmod +x ./gradlew
+        ./gradlew assemble${{ matrix.variant }} --no-daemon --warning-mode none
       
-    - name: List generated APKs
-      run: |
-        echo "📦 生成的 APK 文件列表："
-        find app/build/outputs/apk -name "*.apk" -type f -exec ls -la {} \;
-        echo "APK 文件数量："
-        find app/build/outputs/apk -name "*.apk" -type f | wc -l
-      
-    - name: Upload APKs
+    - name: Upload ${{ matrix.variant }}
       uses: actions/upload-artifact@v4
       with:
-        name: xmbox-apks
-        path: app/build/outputs/apk/**/*.apk
+        name: ${{ matrix.variant }}-apk
+        path: app/build/outputs/apk/*/${{ matrix.variant }}/*.apk
         retention-days: 30
-        if-no-files-found: error
-      
-    - name: Build Success
-      run: |
-        echo "🎉 构建成功！"
-        echo "📥 请到 Artifacts 区域下载 APK 文件"
-        echo "🔧 下载后使用 MT2 管理器进行签名即可安装"
