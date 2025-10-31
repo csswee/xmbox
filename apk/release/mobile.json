@@ -1,9 +1,0 @@
-{
-  "name": "3.1.0",
-  "desc": "XMBOX 手机版 v3.1.0\n\n✨ 新功能：\n• 实现定时按钮倒计时显示功能\n• 适配pixel主题化图标展示\n\n🎨 UI优化：\n• 优化TimerDialog按钮宽度设计\n• 优化播放进度条交互体验\n• 改进界面视觉一致性\n\n🐛 修复：\n• 修复更新跳转链接，跳转到具体版本页面\n\n🔧 改进优化：\n• 提升定时功能用户体验\n• 优化内存使用\n• 提升播放稳定性\n\n📱 支持架构：ARM64-v8a | ARMv7a",
-  "code": 310,
-  "downloads": {
-    "arm64_v8a": "v3.1.0/mobile-arm64_v8a-v3.1.0.apk",
-    "armeabi_v7a": "v3.1.0/mobile-armeabi_v7a-v3.1.0.apk"
-  }
-}
