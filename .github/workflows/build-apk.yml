@@ -1,4 +1,4 @@
-name: Build with Fixed Dependencies
+name: Debug Build Process
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  debug:
     runs-on: ubuntu-latest
     
     steps:
@@ -21,38 +21,42 @@ jobs:
         
     - name: Check project structure
       run: |
-        echo "📁 项目结构："
-        find . -name "*.java" -path "*/cast/*" | head -20
+        echo "📁 项目根目录内容："
+        ls -la
         echo ""
-        echo "📦 依赖配置："
-        find . -name "build.gradle" -type f | head -10
+        echo "📁 app 目录内容："
+        ls -la app/ || echo "没有 app 目录"
+        echo ""
+        echo "🔍 查找所有 build.gradle 文件："
+        find . -name "build.gradle" -type f
+        echo ""
+        echo "🔍 查找 CastActivity 文件："
+        find . -name "*CastActivity*" -type f
         
-    - name: Try to build without problematic modules
+    - name: Check gradle files
+      run: |
+        echo "📋 检查 app/build.gradle 内容："
+        if [ -f "app/build.gradle" ]; then
+          head -50 app/build.gradle
+        else
+          echo "app/build.gradle 不存在"
+        fi
+        
+    - name: Try to build with detailed error info
       run: |
         chmod +x ./gradlew
-        # 尝试跳过有问题的模块
-        ./gradlew app:dependencies --configuration implementation --no-daemon || true
-        echo "检查依赖树完成"
+        ./gradlew clean --no-daemon || true
+        ./gradlew tasks --no-daemon | grep assemble || true
         
-    - name: Build specific variants (skip problematic code)
+    - name: Attempt basic build
       run: |
-        # 只构建没有 CastActivity 问题的变体
-        ./gradlew assembleMobileArm64_v8aDebug \
-                assembleMobileArmeabi_v7aDebug \
-                assembleLeanbackArm64_v8aDebug \
-                assembleLeanbackArmeabi_v7aDebug \
-                --no-daemon || echo "构建过程中有错误，但继续执行"
+        echo "尝试构建调试版本..."
+        ./gradlew assembleDebug --no-daemon --stacktrace || echo "构建失败，继续执行"
         
-    - name: Check if any APKs were generated
+    - name: Check build results
       run: |
-        echo "🔍 检查生成的 APK 文件："
-        find app/build/outputs -name "*.apk" -type f 2>/dev/null | sort || echo "没有找到 APK 文件"
-        
-    - name: Upload APKs if any exist
-      uses: actions/upload-artifact@v4
-      if: success() || failure()
-      with:
-        name: partial-apks
-        path: app/build/outputs/**/*.apk
-        retention-days: 30
-        if-no-files-found: warn
+        echo "🔍 检查构建输出："
+        find . -name "*.apk" -type f 2>/dev/null | head -20 || echo "没有找到 APK 文件"
+        echo ""
+        echo "📁 build 目录结构："
+        find app/build -type d 2>/dev/null | head -20 || echo "没有 build 目录"
