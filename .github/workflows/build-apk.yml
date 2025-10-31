@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK with Auto Signing
 
 on:
   push:
@@ -9,16 +9,11 @@ on:
   workflow_dispatch:
 
 env:
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx2048m -Dfile.encoding=UTF-8"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        variant: [leanback, mobile]
-        abi: [arm64_v8a, armeabi_v7a]
     
     steps:
     - name: Checkout code
@@ -35,42 +30,49 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       
-    - name: Cache Gradle
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-          
-    - name: Setup signing config
-      if: secrets.ANDROID_KEYSTORE_BASE64
+    - name: Generate temporary signing key
       run: |
         mkdir -p ./app/keystore
-        echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > ./app/keystore/release.jks
-      shell: bash
-      
+        # 生成临时签名密钥（有效期为365天）
+        keytool -genkey -v \
+          -keystore ./app/keystore/temp.jks \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 365 \
+          -alias temp \
+          -storepass temp_password \
+          -keypass temp_password \
+          -dname "CN=Temp, OU=CI, O=XMBox, L=Unknown, ST=Unknown, C=CN"
+          
     - name: Make gradlew executable
       run: chmod +x ./gradlew
       
-    - name: Build APK
+    - name: Build with temporary signing
       run: |
-        ./gradlew assemble${{
-          matrix.variant.charAt(0).toUpperCase() + matrix.variant.slice(1)
-        }}${{
-          matrix.abi.charAt(0).toUpperCase() + matrix.abi.slice(1)
-        }}Release \
+        # 使用临时签名构建所有变体
+        ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=./app/keystore/temp.jks \
+          -Pandroid.injected.signing.store.password=temp_password \
+          -Pandroid.injected.signing.key.alias=temp \
+          -Pandroid.injected.signing.key.password=temp_password \
           --no-daemon \
           --stacktrace \
-          -Porg.gradle.parallel=true
+          -Porg.gradle.parallel=false
           
+    - name: List generated APKs
+      run: |
+        echo "=== 生成的 APK 文件（临时签名）==="
+        find app/build/outputs/apk -name "*.apk" -type f | while read file; do
+          echo "📦 $(basename "$file") - $(du -h "$file" | cut -f1)"
+          # 显示 APK 签名信息
+          apksigner verify --print-certs "$file" | head -5 || echo "无法验证签名"
+        done
+        
     - name: Upload APK artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.variant }}-${{ matrix.abi }}-apk
-        path: app/build/outputs/apk/${{ matrix.variant }}/${{ matrix.abi }}/*.apk
+        name: xmbox-temp-signed-apks
+        path: app/build/outputs/apk/*/release/*.apk
         retention-days: 30
         
     - name: Upload to Release
