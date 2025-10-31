@@ -1,4 +1,4 @@
-name: Deep Diagnose Project
+name: Build Mobile Only
 
 on:
   push:
@@ -6,71 +6,48 @@ on:
   workflow_dispatch:
 
 jobs:
-  diagnose:
+  build:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Analyze repository structure
-      run: |
-        echo "🔍 深度分析仓库结构..."
-        echo ""
-        echo "📊 仓库总大小："
-        du -sh . || echo "无法计算大小"
-        echo ""
-        echo "📁 根目录详细内容："
-        ls -la
-        echo ""
-        echo "📁 所有子目录："
-        find . -maxdepth 2 -type d | sort
-        echo ""
-        echo "📋 所有 Gradle 文件："
-        find . -name "*.gradle" -type f | sort
-        echo ""
-        echo "📋 所有 Gradle 属性文件："
-        find . -name "gradle.properties" -type f | sort
-        echo ""
-        echo "🐘 Gradle Wrapper 检查："
-        ls -la gradlew* 2>/dev/null || echo "没有找到 gradlew"
-        ls -la gradle/ 2>/dev/null || echo "没有 gradle 目录"
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
         
-    - name: Check Android project structure
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      
+    - name: Create temporary keystore
       run: |
-        echo "🤖 Android 项目结构检查："
-        echo ""
-        echo "📱 查找 AndroidManifest.xml："
-        find . -name "AndroidManifest.xml" -type f | head -10
-        echo ""
-        echo "📦 查找 build.gradle 文件："
-        find . -name "build.gradle" -type f | head -10
-        echo ""
-        echo "🔧 查看 settings.gradle："
-        if [ -f "settings.gradle" ]; then
-          cat settings.gradle
-        else
-          echo "没有 settings.gradle 文件"
-        fi
-        echo ""
-        echo "📝 查看项目配置："
-        if [ -f "build.gradle" ]; then
-          echo "根目录 build.gradle 内容："
-          head -30 build.gradle
-        fi
+        mkdir -p keystore
+        keytool -genkey -v -keystore keystore/release.jks \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -alias xmbox -dname "CN=Android,O=Android,C=US" \
+          -storepass xmbox123 -keypass xmbox123
+      
+    - name: Build mobile variants only
+      run: |
+        echo "📱 只构建手机版本（避开 TV 版的 CastActivity）..."
+        ./gradlew clean
+        ./gradlew assembleMobileArm64_v8aDebug \
+                assembleMobileArmeabi_v7aDebug \
+                --no-daemon --stacktrace
         
-    - name: Check source code structure
+    - name: Check results
       run: |
-        echo "📚 源代码结构检查："
+        echo "📦 生成的 APK 文件："
+        find . -name "*.apk" -type f
         echo ""
-        echo "🐦 Java 文件统计："
-        find . -name "*.java" -type f | wc -l
-        echo ""
-        echo "📄 Java 文件位置："
-        find . -name "*.java" -type f | head -20
-        echo ""
-        echo "🔍 查找 CastActivity："
-        find . -name "*CastActivity*" -type f
-        echo ""
-        echo "📁 主要的包结构："
-        find . -name "*.java" -type f | sed 's/\/[^/]*$//' | sort | uniq | head -20
+        echo "✅ 构建完成！"
+        
+    - name: Upload mobile APKs
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-apks
+        path: app/build/outputs/apk/mobile*/debug/*.apk
+        retention-days: 30
